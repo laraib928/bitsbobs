@@ -35,14 +35,14 @@ export default async function HomePage() {
     <div className="w-full">
       {/* 1. Hero Section */}
       <section className="bg-navy-deep text-white relative overflow-hidden">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 py-12 sm:pt-20 sm:pb-[88px] grid grid-cols-1 lg:grid-cols-[minmax(min(100%,500px),1fr)_1fr] gap-8 sm:gap-12 items-center">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 py-12 lg:py-[56px] grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-[48px] items-start">
           {/* Left Column */}
           <div className="flex flex-col gap-5 sm:gap-7 relative z-10">
             <p className="m-0 text-[14px] sm:text-[16px] font-semibold text-brand-yellow">
               Handy. Pre-packed. Great value.
             </p>
-            <h1 className="m-0 text-[clamp(36px,9.5vw,44px)] sm:text-[60px] lg:text-[76px] leading-[1.05] sm:leading-[0.98] font-extrabold font-stretch-115 tracking-[-0.02em]">
-              All the little things you always run out of.
+            <h1 className="m-0 text-[clamp(36px,9.5vw,44px)] sm:text-[60px] lg:text-[clamp(48px,4.6vw,66px)] leading-[1.05] sm:leading-[0.98] lg:leading-[1.02] font-extrabold font-stretch-115 lg:[font-stretch:normal] lg:[font-variation-settings:'wdth'_100] tracking-[-0.02em]">
+              All the little<br className="hidden lg:inline" /> things you<br className="hidden lg:inline" /> always run out<br className="hidden lg:inline" /> of.
             </h1>
             <p className="m-0 text-[16px] sm:text-[20px] leading-[1.55] text-soft-on-dark max-w-[31em]">
               Combs, fuses, tape, party candles, kitchen tools and more. Buy one
@@ -93,7 +93,7 @@ export default async function HomePage() {
           <div
             aria-hidden="true"
             style={{ aspectRatio: '49 / 44' }}
-            className="relative select-none hidden min-[480px]:block w-full max-w-[560px] max-lg:mx-auto max-lg:mt-6 lg:mt-0"
+            className="relative select-none hidden min-[480px]:block w-full max-lg:max-w-[560px] max-lg:mx-auto max-lg:mt-6 lg:max-w-[620px] lg:mt-0 lg:ml-auto lg:self-start"
           >
             {/* Yellow diamond (behind everything, z-index 0) */}
             <div className="absolute left-[22.3%] top-[14.7%] w-[63.5%] aspect-square border-[3px] border-[#FFEC00] rotate-45 pointer-events-none z-0" />
