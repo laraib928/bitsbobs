@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-archivo: 'Archivo', system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+  color: #14112E;
+  background-color: #FFFFFF;
+  font-family: var(--font-archivo), system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
+  max-width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Width axis stretch classes matching design source */
+.font-stretch-115 {
+  font-stretch: 115%;
+  font-variation-settings: "wdth" 115;
+}
+
+.font-stretch-112 {
+  font-stretch: 112%;
+  font-variation-settings: "wdth" 112;
+}
+
+.font-stretch-110 {
+  font-stretch: 110%;
+  font-variation-settings: "wdth" 110;
+}
+
+.font-stretch-108 {
+  font-stretch: 108%;
+  font-variation-settings: "wdth" 108;
+}
+
+/* Peg pattern for trade login sidebar */
+.peg-pattern {
+  background-color: #2A2170;
+  background-image: radial-gradient(circle, #140F45 2.6px, transparent 3.2px);
+  background-size: 26px 26px;
+  background-position: 13px 13px;
+}
+
+/* Focus styles for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #312682;
+  outline-offset: 2px;
+}
+
+/* Hide scrollbars while maintaining scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Remove default number input spinners where custom stepper is used */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
