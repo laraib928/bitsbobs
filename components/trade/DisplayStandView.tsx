@@ -222,43 +222,6 @@ export function DisplayStandView({ stand, itemsList }: DisplayStandViewProps) {
             </tbody>
           </table>
         </div>
-        <p className="m-0 text-[15px] text-muted">
-          Plus [number] more lines. The full list is shown here once the stand is
-          set up in admin.
-        </p>
-      </section>
-
-      {/* Other Stands */}
-      <section className="flex flex-col gap-4.5">
-        <h2 className="m-0 text-[32px] font-extrabold font-stretch-110 text-navy-deep">
-          Other stands
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-dashed border-field-border rounded-[20px] p-6 flex flex-col gap-2">
-            <strong className="text-[19px] text-ink font-bold">
-              [Counter stand]
-            </strong>
-            <span className="text-muted text-[15px]">
-              [Lines, packs and wholesale price]
-            </span>
-          </div>
-          <div className="bg-white border border-dashed border-field-border rounded-[20px] p-6 flex flex-col gap-2">
-            <strong className="text-[19px] text-ink font-bold">
-              [Wall panel]
-            </strong>
-            <span className="text-muted text-[15px]">
-              [Lines, packs and wholesale price]
-            </span>
-          </div>
-          <div className="bg-white border border-dashed border-field-border rounded-[20px] p-6 flex flex-col gap-2">
-            <strong className="text-[19px] text-ink font-bold">
-              [Category stand, e.g. party]
-            </strong>
-            <span className="text-muted text-[15px]">
-              [Lines, packs and wholesale price]
-            </span>
-          </div>
-        </div>
       </section>
     </main>
   );

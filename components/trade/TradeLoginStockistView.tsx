@@ -647,6 +647,87 @@ export function TradeLoginStockistView() {
                   {isRegistering ? 'Submitting application...' : 'Apply to become a stockist'}
                 </button>
               </form>
+
+              {/* Stand Section under the form */}
+              <div className="mt-8 pt-8 border-t border-line flex flex-col gap-6">
+                <div className="rounded-[24px] overflow-hidden bg-navy-deep text-white shadow-md">
+                  <figure className="m-0 w-full bg-[#2A2170] leading-none overflow-hidden">
+                    <Image
+                      src="/images/stand.jpg"
+                      alt="Bits N Bobs display stand full of hanging packs in a shop aisle"
+                      width={1217}
+                      height={1292}
+                      sizes="(max-width: 768px) 100vw, 520px"
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        aspectRatio: '1217 / 1292',
+                      }}
+                      className="block w-full h-auto object-contain"
+                    />
+                  </figure>
+                  <div className="p-6 sm:p-8 flex flex-col gap-5">
+                    <div>
+                      <p className="m-0 mb-1.5 text-[13px] font-bold text-brand-yellow uppercase tracking-wider">
+                        Retail display stand
+                      </p>
+                      <h3 className="m-0 text-[24px] sm:text-[28px] font-extrabold font-stretch-110">
+                        Make the most of your space
+                      </h3>
+                      <p className="mt-2 mb-0 text-[14px] sm:text-[15px] leading-[1.6] text-[#D6D4EE]">
+                        A spare metre of wall becomes a steady stream of small sales. Order a fully stocked display stand, every pack pre-priced and bar-coded, and our rep comes back regularly to keep every hook full.
+                      </p>
+                    </div>
+
+                    <ol className="m-0 p-0 list-none flex flex-col">
+                      <li className="grid grid-cols-[40px_1fr] gap-3.5 py-3 border-t border-white/15">
+                        <span className="text-[24px] sm:text-[26px] font-extrabold text-brand-yellow font-stretch-112">
+                          01
+                        </span>
+                        <span>
+                          <strong className="block text-[15px] sm:text-[16px] text-white">
+                            Become a stockist
+                          </strong>
+                          <span className="text-[#D6D4EE] text-[13px] sm:text-[14px]">
+                            Apply online. We approve your trade account.
+                          </span>
+                        </span>
+                      </li>
+                      <li className="grid grid-cols-[40px_1fr] gap-3.5 py-3 border-t border-white/15">
+                        <span className="text-[24px] sm:text-[26px] font-extrabold text-brand-yellow font-stretch-112">
+                          02
+                        </span>
+                        <span>
+                          <strong className="block text-[15px] sm:text-[16px] text-white">
+                            Order a fully stocked stand
+                          </strong>
+                          <span className="text-[#D6D4EE] text-[13px] sm:text-[14px]">
+                            See every product and quantity on the stand before you buy.
+                          </span>
+                        </span>
+                      </li>
+                      <li className="grid grid-cols-[40px_1fr] gap-3.5 py-3 border-t border-b border-white/15">
+                        <span className="text-[24px] sm:text-[26px] font-extrabold text-brand-yellow font-stretch-112">
+                          03
+                        </span>
+                        <span>
+                          <strong className="block text-[15px] sm:text-[16px] text-white">
+                            Reorder packs of 6
+                          </strong>
+                          <span className="text-[#D6D4EE] text-[13px] sm:text-[14px]">
+                            Free delivery on trade orders of £150 or more.
+                          </span>
+                        </span>
+                      </li>
+                    </ol>
+
+                    <div className="p-3.5 rounded-xl bg-white/10 flex items-center gap-2.5 text-[14px] font-semibold text-brand-yellow">
+                      <span className="text-base">🚚</span>
+                      <span>Free delivery on trade orders of £150 or more</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </>
           )}
 

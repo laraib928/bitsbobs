@@ -79,7 +79,142 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
   return (
     <>
       <header className="bg-white border-b border-line sticky top-0 z-40">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 py-3 sm:py-4 flex flex-wrap gap-x-2 sm:gap-x-4 md:gap-x-5 gap-y-2 items-center justify-between">
+        {/* Mobile Header (below 768px / md): Option B layout */}
+        <div className="md:hidden px-3 sm:px-4 py-2.5 flex flex-col gap-2">
+          {/* Row 1: Logo centred on its own row */}
+          <div className="flex justify-center items-center py-1">
+            <Link
+              href={isTrade ? '/trade/shop' : '/'}
+              aria-label="Bits N Bobs home"
+              className="inline-block"
+            >
+              <Image
+                src="/images/logo.png"
+                alt="Bits 'N' Bobs"
+                width={160}
+                height={48}
+                priority
+                className="h-10 w-auto block"
+              />
+            </Link>
+          </div>
+
+          {/* Row 2: 4 equal buttons across full width */}
+          <div className="grid grid-cols-4 gap-2 w-full">
+            {/* 1. Search (light grey, opens search) */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSearchOpen((prev) => !prev)}
+              aria-label={isMobileSearchOpen ? 'Close search' : 'Open search'}
+              aria-expanded={isMobileSearchOpen}
+              className="h-[58px] rounded-[14px] bg-[#F1F2F6] hover:bg-[#E5E7EB] text-ink flex flex-col items-center justify-center gap-1 border-0 cursor-pointer transition-colors active:scale-95"
+            >
+              <SearchIcon size={20} className="text-ink" />
+              <span className="text-[12px] font-bold leading-tight text-ink">Search</span>
+            </button>
+
+            {/* 2. Trade login (navy #312682) */}
+            {isTrade ? (
+              <Link
+                href="/trade/account"
+                aria-label="Trade account"
+                className="h-[58px] rounded-[14px] bg-[#312682] hover:bg-[#251c68] text-white no-underline flex flex-col items-center justify-center gap-1 transition-colors active:scale-95"
+              >
+                <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center font-bold text-[11px]">
+                  {initials}
+                </span>
+                <span className="text-[12px] font-bold leading-tight text-white">Account</span>
+              </Link>
+            ) : (
+              <Link
+                href="/trade"
+                aria-label="Trade login"
+                className="h-[58px] rounded-[14px] bg-[#312682] hover:bg-[#251c68] text-white no-underline flex flex-col items-center justify-center gap-1 transition-colors active:scale-95"
+              >
+                <LockIcon size={18} className="text-white" />
+                <span className="text-[12px] font-bold leading-tight text-white">Trade login</span>
+              </Link>
+            )}
+
+            {/* 3. Basket (light grey, red count badge) */}
+            <Link
+              href={isTrade ? '/trade/checkout' : '/basket'}
+              aria-label={
+                isTrade
+                  ? `Basket, ${totalPacks} packs`
+                  : `Basket, ${publicItemCount} items`
+              }
+              className="relative h-[58px] rounded-[14px] bg-[#F1F2F6] hover:bg-[#E5E7EB] text-ink no-underline flex flex-col items-center justify-center gap-1 transition-colors active:scale-95"
+            >
+              <BasketIcon size={20} className="text-ink" />
+              {(isTrade ? totalPacks : publicItemCount) > 0 && (
+                <span className="absolute top-1.5 right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E30512] text-white text-[11px] font-extrabold flex items-center justify-center leading-none">
+                  {isTrade ? totalPacks : publicItemCount}
+                </span>
+              )}
+              <span className="text-[12px] font-bold leading-tight text-ink">Basket</span>
+            </Link>
+
+            {/* 4. Menu (red #E30512) */}
+            <button
+              ref={menuButtonRef}
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={isMenuOpen}
+              className="h-[58px] rounded-[14px] bg-[#E30512] hover:bg-[#c9000b] text-white flex flex-col items-center justify-center gap-1 border-0 cursor-pointer transition-colors active:scale-95"
+            >
+              <MenuIcon size={20} className="text-white" />
+              <span className="text-[12px] font-bold leading-tight text-white">Menu</span>
+            </button>
+          </div>
+
+          {/* Expandable Mobile Search input */}
+          {isMobileSearchOpen && (
+            <div className="w-full pt-1">
+              <form
+                onSubmit={handleSearch}
+                className={`w-full flex items-center gap-2.5 bg-[#F1F2F6] border border-line ${
+                  isTrade ? 'rounded-[10px] h-11 px-3.5' : 'rounded-full h-11 px-4'
+                }`}
+              >
+                <SearchIcon size={20} className="text-muted flex-none" />
+                <label
+                  htmlFor={isTrade ? 'mobile-trade-search' : 'mobile-public-search'}
+                  className="sr-only"
+                >
+                  Search products
+                </label>
+                <input
+                  id={isTrade ? 'mobile-trade-search' : 'mobile-public-search'}
+                  type="search"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={
+                    isTrade
+                      ? 'Search 125 products or type a product code'
+                      : 'Search combs, tape, fuses, candles...'
+                  }
+                  className="flex-1 border-0 bg-transparent font-sans text-[15px] text-ink outline-none min-w-0"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Clear search"
+                    className="text-muted hover:text-ink text-sm p-1 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </form>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop / Tablet Header (768px / md and up): Unchanged */}
+        <div className="hidden md:flex max-w-[1320px] mx-auto px-4 sm:px-8 py-3 sm:py-4 gap-x-4 md:gap-x-5 items-center justify-between">
           {/* Logo */}
           <Link
             href={isTrade ? '/trade/shop' : '/'}
@@ -96,10 +231,10 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
             />
           </Link>
 
-          {/* Desktop Search Form (hidden below 768px / md) */}
+          {/* Desktop Search Form */}
           <form
             onSubmit={handleSearch}
-            className={`hidden md:flex flex-1 basis-[320px] items-center gap-2.5 bg-surface border border-line ${
+            className={`flex flex-1 basis-[320px] items-center gap-2.5 bg-surface border border-line ${
               isTrade ? 'rounded-[10px] h-12 px-3.5' : 'rounded-full h-[50px] px-[18px]'
             }`}
           >
@@ -123,17 +258,6 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Mobile Search Toggle Button (shown below 768px / md) */}
-            <button
-              type="button"
-              onClick={() => setIsMobileSearchOpen((prev) => !prev)}
-              aria-label={isMobileSearchOpen ? 'Close search' : 'Open search'}
-              aria-expanded={isMobileSearchOpen}
-              className="md:hidden flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border border-line text-ink hover:bg-surface transition-colors cursor-pointer"
-            >
-              <SearchIcon size={20} />
-            </button>
-
             {isTrade ? (
               <>
                 {/* Shop name chip with dropdown */}
@@ -224,7 +348,6 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
 
                 {/* Navy Menu Button */}
                 <button
-                  ref={menuButtonRef}
                   type="button"
                   onClick={() => setIsMenuOpen(true)}
                   aria-label="Open menu"
@@ -245,7 +368,7 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
                   className="flex items-center justify-center md:gap-2 w-11 h-11 min-w-[44px] min-h-[44px] md:w-auto md:h-[50px] md:px-[18px] rounded-full bg-brand-navy hover:bg-[#251c68] text-white no-underline font-bold text-[15px] transition-colors"
                 >
                   <LockIcon size={18} />
-                  <span className="hidden md:inline">Trade login</span>
+                  <span>Trade login</span>
                 </Link>
 
                 {/* Public Basket Button */}
@@ -264,7 +387,6 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
 
                 {/* Red Menu Button */}
                 <button
-                  ref={menuButtonRef}
                   type="button"
                   onClick={() => setIsMenuOpen(true)}
                   aria-label="Open menu"
@@ -277,46 +399,6 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
               </>
             )}
           </div>
-
-          {/* Full-width Search Bar below 768px (toggled by search icon) */}
-          {isMobileSearchOpen && (
-            <div className="w-full pt-2 md:hidden">
-              <form
-                onSubmit={handleSearch}
-                className={`w-full flex items-center gap-2.5 bg-surface border border-line ${
-                  isTrade ? 'rounded-[10px] h-12 px-3.5' : 'rounded-full h-[46px] px-4'
-                }`}
-              >
-                <SearchIcon size={20} className="text-muted flex-none" />
-                <label htmlFor={isTrade ? 'mobile-trade-search' : 'mobile-public-search'} className="sr-only">
-                  Search products
-                </label>
-                <input
-                  id={isTrade ? 'mobile-trade-search' : 'mobile-public-search'}
-                  type="search"
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={
-                    isTrade
-                      ? 'Search 125 products or type a product code'
-                      : 'Search combs, tape, fuses, candles...'
-                  }
-                  className="flex-1 border-0 bg-transparent font-sans text-[15px] text-ink outline-none min-w-0"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    aria-label="Clear search"
-                    className="text-muted hover:text-ink text-sm p-1 cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                )}
-              </form>
-            </div>
-          )}
         </div>
       </header>
 

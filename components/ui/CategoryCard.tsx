@@ -7,15 +7,44 @@ import { ArrowRightIcon } from './Icons';
 interface CategoryCardProps {
   category: Category;
   baseHref?: string;
+  tintBg?: string;
+  tintBorder?: string;
 }
 
-export function CategoryCard({ category, baseHref = '/shop' }: CategoryCardProps) {
+const TINT_MAP: Record<string, { bg: string; border: string }> = {
+  cosmetics: { bg: 'bg-[#FDF2F4]', border: 'border-[#F9D2D9]' },
+  household: { bg: 'bg-[#EFF6FF]', border: 'border-[#BFDBFE]' },
+  diy: { bg: 'bg-[#FEFCE8]', border: 'border-[#FEF08A]' },
+  kitchenware: { bg: 'bg-[#F0FDF4]', border: 'border-[#BBF7D0]' },
+  'hair-products': { bg: 'bg-[#F5F3FF]', border: 'border-[#DDD6FE]' },
+  party: { bg: 'bg-[#FDF4FF]', border: 'border-[#F5D0FE]' },
+};
+
+const DEFAULT_TINTS = [
+  { bg: 'bg-[#FDF2F4]', border: 'border-[#F9D2D9]' },
+  { bg: 'bg-[#EFF6FF]', border: 'border-[#BFDBFE]' },
+  { bg: 'bg-[#FEFCE8]', border: 'border-[#FEF08A]' },
+  { bg: 'bg-[#F0FDF4]', border: 'border-[#BBF7D0]' },
+  { bg: 'bg-[#F5F3FF]', border: 'border-[#DDD6FE]' },
+  { bg: 'bg-[#FDF4FF]', border: 'border-[#F5D0FE]' },
+];
+
+export function CategoryCard({
+  category,
+  baseHref = '/shop',
+  tintBg,
+  tintBorder,
+}: CategoryCardProps) {
+  const mapped = TINT_MAP[category.slug];
+  const bgClass = tintBg || mapped?.bg || 'bg-white';
+  const borderClass = tintBorder || mapped?.border || 'border-line';
+
   return (
     <Link
       href={`${baseHref}/${category.slug}`}
-      className="bg-white rounded-[16px] sm:rounded-[20px] p-3 sm:p-[18px] pb-3.5 sm:pb-5 flex flex-col gap-2.5 sm:gap-3.5 no-underline text-ink border border-line group hover:border-brand-navy hover:shadow-md transition-all duration-200"
+      className={`${bgClass} rounded-[20px] p-3.5 sm:p-5 flex flex-col items-center text-center gap-2.5 sm:gap-3 no-underline text-ink border ${borderClass} group hover:shadow-md hover:-translate-y-1 transition-all duration-200`}
     >
-      <div className="w-full aspect-square relative bg-surface/50 rounded-xl overflow-hidden flex items-center justify-center p-2">
+      <div className="w-full aspect-square relative bg-white rounded-2xl overflow-hidden flex items-center justify-center p-2.5 shadow-sm">
         <Image
           src={category.image}
           alt={category.name}
@@ -25,15 +54,14 @@ export function CategoryCard({ category, baseHref = '/shop' }: CategoryCardProps
           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         />
       </div>
-      <span className="flex justify-between items-center font-extrabold text-[14px] sm:text-[18px] gap-1.5">
-        <span className="truncate">{category.name}</span>
-        <span
-          aria-hidden="true"
-          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-brand-navy text-white flex items-center justify-center group-hover:bg-brand-red transition-colors flex-none"
-        >
-          <ArrowRightIcon size={14} className="sm:w-4 sm:h-4" />
+      <div className="flex flex-col items-center gap-0.5">
+        <strong className="font-extrabold text-[15px] sm:text-[17px] text-ink group-hover:text-brand-red transition-colors">
+          {category.name}
+        </strong>
+        <span className="text-[12px] sm:text-[13px] font-semibold text-muted group-hover:underline">
+          Shop now →
         </span>
-      </span>
+      </div>
     </Link>
   );
 }

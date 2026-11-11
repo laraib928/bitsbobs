@@ -12,6 +12,8 @@ interface ProductCardProps {
   badge?: string;
   badgeBg?: string;
   badgeFg?: string;
+  buttonLabel?: string;
+  cardBg?: string;
 }
 
 export function ProductCard({
@@ -19,6 +21,8 @@ export function ProductCard({
   badge,
   badgeBg,
   badgeFg = '#FFFFFF',
+  buttonLabel = 'Add to basket',
+  cardBg = 'bg-surface',
 }: ProductCardProps) {
   const addPublicItem = useCartStore((state) => state.addPublicItem);
 
@@ -50,7 +54,7 @@ export function ProductCard({
   };
 
   return (
-    <article className="relative rounded-[16px] sm:rounded-[20px] bg-surface p-3 sm:p-4 flex flex-col gap-2.5 sm:gap-3 group transition-transform duration-200 hover:-translate-y-1">
+    <article className={`relative rounded-[16px] sm:rounded-[20px] ${cardBg} p-3 sm:p-4 flex flex-col gap-2.5 sm:gap-3 group transition-transform duration-200 hover:-translate-y-1 shadow-sm`}>
       {/* Badge */}
       {displayBadge && (
         <span
@@ -64,7 +68,7 @@ export function ProductCard({
       {/* Product Image */}
       <Link
         href={`/products/${product.slug}`}
-        className="block bg-white rounded-[12px] sm:rounded-[14px] p-2 sm:p-3 overflow-hidden"
+        className="block bg-white rounded-[12px] sm:rounded-[14px] p-2 sm:p-3 overflow-hidden border border-line/40"
       >
         <Image
           src={product.images[0] || '/images/hair-grips.jpg'}
@@ -91,17 +95,17 @@ export function ProductCard({
         </p>
       </div>
 
-      {/* Price & Add to basket: full width under price on phone */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 px-1 pb-1 mt-auto">
-        <strong className="text-[18px] sm:text-[24px] font-extrabold text-navy-deep">
+      {/* Price & Add to basket */}
+      <div className="flex justify-between items-center gap-2 px-1 pb-1 mt-auto">
+        <strong className="text-[18px] sm:text-[22px] font-extrabold text-navy-deep">
           {priceFormatted}
         </strong>
         <button
           type="button"
           onClick={handleAddToBasket}
-          className="w-full sm:w-auto inline-flex items-center justify-center h-11 min-h-[44px] px-3 sm:px-[18px] rounded-full bg-brand-red hover:bg-[#c9000b] text-white font-bold text-[13px] sm:text-[14px] border-0 cursor-pointer transition-colors shadow-sm text-center"
+          className="inline-flex items-center justify-center h-9 sm:h-10 px-3.5 sm:px-5 rounded-full bg-brand-red hover:bg-[#c9000b] text-white font-extrabold text-[13px] sm:text-[14px] border-0 cursor-pointer transition-colors shadow-sm text-center"
         >
-          Add to basket
+          {buttonLabel}
         </button>
       </div>
     </article>
