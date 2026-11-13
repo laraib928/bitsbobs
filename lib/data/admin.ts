@@ -976,9 +976,9 @@ export async function getAdminDeliverySettings() {
     vatRateBp: 2000,                   // 20.00%
     contactPhone: '0161 839 5050',
     contactEmail: 'sales@bitsnbobs.co',
-    socialFacebook: 'https://www.facebook.com/bitsnbobsuk',
-    socialInstagram: '#social',
-    socialTiktok: '#social',
+    socialFacebook: 'https://www.facebook.com/bitsnbobsuk/',
+    socialInstagram: '',
+    socialTiktok: 'https://www.tiktok.com/@bitsnbobsmcr',
   };
 
   if (isConfigured) {
@@ -998,9 +998,9 @@ export async function getAdminDeliverySettings() {
           vatRateBp: data.vat_rate_bp,
           contactPhone: data.contact_phone,
           contactEmail: data.contact_email,
-          socialFacebook: data.social_facebook || '',
-          socialInstagram: data.social_instagram || '',
-          socialTiktok: data.social_tiktok || '',
+          socialFacebook: data.social_facebook || 'https://www.facebook.com/bitsnbobsuk/',
+          socialInstagram: '',
+          socialTiktok: data.social_tiktok || 'https://www.tiktok.com/@bitsnbobsmcr',
         };
       }
     } catch {

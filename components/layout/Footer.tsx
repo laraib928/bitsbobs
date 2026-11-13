@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SITE_CONFIG } from '@/lib/config';
-import { FacebookIcon, InstagramIcon, TikTokIcon } from '@/components/ui/Icons';
+import { SITE_CONFIG, getWhatsAppUrl } from '@/lib/config';
+import { FacebookIcon, TikTokIcon, WhatsAppIcon } from '@/components/ui/Icons';
 
 export function Footer() {
   return (
@@ -28,21 +28,16 @@ export function Footer() {
                 href={SITE_CONFIG.socialLinks.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Facebook"
+                aria-label="Bits N Bobs on Facebook"
                 className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#2A2170] hover:bg-[#392d99] text-white flex items-center justify-center transition-colors"
               >
                 <FacebookIcon size={18} />
               </a>
               <a
-                href={SITE_CONFIG.socialLinks.instagram}
-                aria-label="Instagram"
-                className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#2A2170] hover:bg-[#392d99] text-white flex items-center justify-center transition-colors"
-              >
-                <InstagramIcon size={18} />
-              </a>
-              <a
                 href={SITE_CONFIG.socialLinks.tiktok}
-                aria-label="TikTok"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Bits N Bobs on TikTok"
                 className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#2A2170] hover:bg-[#392d99] text-white flex items-center justify-center transition-colors"
               >
                 <TikTokIcon size={18} />
@@ -103,6 +98,15 @@ export function Footer() {
               className="text-[#FFEC00] hover:underline no-underline font-extrabold text-[18px] sm:text-[22px] py-1 inline-flex items-center min-h-[44px]"
             >
               {SITE_CONFIG.phone}
+            </a>
+            <a
+              href={getWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#25D366] hover:text-[#52e78b] hover:underline no-underline font-bold text-[15px] py-1 inline-flex items-center gap-2 min-h-[44px]"
+            >
+              <WhatsAppIcon size={18} />
+              <span>WhatsApp us</span>
             </a>
             <a
               href={`mailto:${SITE_CONFIG.email}`}

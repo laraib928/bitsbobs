@@ -84,7 +84,7 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
           {/* Row 1: Logo centred on its own row */}
           <div className="flex justify-center items-center py-1">
             <Link
-              href={isTrade ? '/trade/shop' : '/'}
+              href="/"
               aria-label="Bits N Bobs home"
               className="inline-block"
             >
@@ -193,8 +193,8 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={
                     isTrade
-                      ? 'Search 125 products or type a product code'
-                      : 'Search combs, tape, fuses, candles...'
+                      ? 'Search over 300 products or type a product code'
+                      : 'Search over 300 products…'
                   }
                   className="flex-1 border-0 bg-transparent font-sans text-[15px] text-ink outline-none min-w-0"
                 />
@@ -217,7 +217,7 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
         <div className="hidden md:flex max-w-[1320px] mx-auto px-4 sm:px-8 py-3 sm:py-4 gap-x-4 md:gap-x-5 items-center justify-between">
           {/* Logo */}
           <Link
-            href={isTrade ? '/trade/shop' : '/'}
+            href="/"
             aria-label="Bits N Bobs home"
             className="block flex-none"
           >
@@ -249,8 +249,8 @@ export function Header({ variant = 'public', tradeProfile }: HeaderProps) {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
                 isTrade
-                  ? 'Search 125 products or type a product code'
-                  : 'Search combs, tape, fuses, candles...'
+                  ? 'Search over 300 products or type a product code'
+                  : 'Search over 300 products…'
               }
               className="flex-1 border-0 bg-transparent font-sans text-[15px] text-ink outline-none min-w-0"
             />

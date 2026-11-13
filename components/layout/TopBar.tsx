@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { SITE_CONFIG } from '@/lib/config';
-import { FacebookIcon, InstagramIcon, TikTokIcon } from '@/components/ui/Icons';
+import { SITE_CONFIG, getWhatsAppUrl } from '@/lib/config';
+import { FacebookIcon, TikTokIcon, WhatsAppIcon } from '@/components/ui/Icons';
 
 interface TopBarProps {
   variant?: 'public' | 'trade';
@@ -19,12 +19,22 @@ export function TopBar({ variant = 'public' }: TopBarProps) {
             ? 'Trade area: wholesale prices shown. Free delivery on orders of £150 or more.'
             : 'Serving your everyday needs since 1994. No minimum order online.'}
         </span>
-        <div className="flex gap-4 sm:gap-5 items-center justify-between w-full md:w-auto">
+        <div className="flex gap-3 sm:gap-4 items-center justify-between w-full md:w-auto">
           <a
             href={SITE_CONFIG.telLink}
             className="text-[#FFEC00] hover:underline no-underline font-bold inline-flex items-center min-h-[44px] py-1 text-[13px] sm:text-[14px]"
           >
             {isTrade ? `Sales: ${SITE_CONFIG.phone}` : SITE_CONFIG.phone}
+          </a>
+          <a
+            href={getWhatsAppUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Chat with us on WhatsApp"
+            className="text-[#25D366] hover:text-[#52e78b] hover:underline no-underline font-bold inline-flex items-center gap-1.5 min-h-[44px] py-1 text-[13px] sm:text-[14px]"
+          >
+            <WhatsAppIcon size={16} />
+            <span>WhatsApp</span>
           </a>
           {!isTrade && (
             <div className="flex gap-2 sm:gap-3 items-center">
@@ -38,14 +48,9 @@ export function TopBar({ variant = 'public' }: TopBarProps) {
                 <FacebookIcon size={18} />
               </a>
               <a
-                href={SITE_CONFIG.socialLinks.instagram}
-                aria-label="Bits N Bobs on Instagram"
-                className="text-white hover:text-[#FFEC00] flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] transition-colors"
-              >
-                <InstagramIcon size={18} />
-              </a>
-              <a
                 href={SITE_CONFIG.socialLinks.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Bits N Bobs on TikTok"
                 className="text-white hover:text-[#FFEC00] flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] transition-colors"
               >

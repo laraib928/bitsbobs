@@ -13,7 +13,7 @@ interface ContentData {
     contactPhone: string;
     contactEmail: string;
     socialFacebook: string;
-    socialInstagram: string;
+    socialInstagram?: string;
     socialTiktok: string;
   };
   reviews: Array<{
@@ -44,9 +44,12 @@ export function AdminContentClient({ initialData }: { initialData: ContentData }
   // Contact details & Social links state
   const [contactPhone, setContactPhone] = useState(initialData.settings.contactPhone);
   const [contactEmail, setContactEmail] = useState(initialData.settings.contactEmail);
-  const [socialFacebook, setSocialFacebook] = useState(initialData.settings.socialFacebook);
-  const [socialInstagram, setSocialInstagram] = useState(initialData.settings.socialInstagram);
-  const [socialTiktok, setSocialTiktok] = useState(initialData.settings.socialTiktok);
+  const [socialFacebook, setSocialFacebook] = useState(
+    initialData.settings.socialFacebook || 'https://www.facebook.com/bitsnbobsuk/'
+  );
+  const [socialTiktok, setSocialTiktok] = useState(
+    initialData.settings.socialTiktok || 'https://www.tiktok.com/@bitsnbobsmcr'
+  );
   const [isSavingContact, setIsSavingContact] = useState(false);
 
   // Videos state
@@ -77,7 +80,7 @@ export function AdminContentClient({ initialData }: { initialData: ContentData }
       contactPhone,
       contactEmail,
       socialFacebook,
-      socialInstagram,
+      socialInstagram: '',
       socialTiktok,
     });
     setIsSavingContact(false);
@@ -320,26 +323,18 @@ export function AdminContentClient({ initialData }: { initialData: ContentData }
                 type="text"
                 value={socialFacebook}
                 onChange={(e) => setSocialFacebook(e.target.value)}
+                placeholder="https://www.facebook.com/bitsnbobsuk/"
                 className="h-11 px-3.5 rounded-xl border border-field-border text-[14px] outline-none focus:border-brand-navy"
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-              Instagram Link / Handle
-              <input
-                type="text"
-                value={socialInstagram}
-                onChange={(e) => setSocialInstagram(e.target.value)}
-                className="h-11 px-3.5 rounded-xl border border-field-border text-[14px] outline-none focus:border-brand-navy"
-              />
-            </label>
-
-            <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+            <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
               TikTok Link / Handle
               <input
                 type="text"
                 value={socialTiktok}
                 onChange={(e) => setSocialTiktok(e.target.value)}
+                placeholder="https://www.tiktok.com/@bitsnbobsmcr"
                 className="h-11 px-3.5 rounded-xl border border-field-border text-[14px] outline-none focus:border-brand-navy"
               />
             </label>

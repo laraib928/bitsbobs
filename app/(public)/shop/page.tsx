@@ -6,7 +6,7 @@ import { TradeShopView } from '@/components/trade/TradeShopView';
 export const metadata: Metadata = {
   title: 'Shop All Products | Bits N Bobs',
   description:
-    'Browse the full Bits N Bobs convenience catalogue: cosmetics, household, hair care, party, kitchenware, and DIY essentials. All items priced with VAT included.',
+    'Browse the full Bits N Bobs convenience catalogue: cosmetics, household, hair care, party, kitchenware, and DIY items. All items priced with VAT included.',
 };
 
 interface ShopPageProps {

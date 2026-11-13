@@ -18,16 +18,28 @@ const checkoutItemSchema = z
     message: 'Every item must have a productId or standId',
   });
 
-const checkoutSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  phone: z.string().optional().or(z.literal('')),
-  address: z.string().min(5, 'Address must be at least 5 characters'),
-  city: z.string().min(2, 'Town or city must be at least 2 characters'),
-  postcode: z.string().regex(ukPostcodeRegex, 'Please enter a valid UK postcode'),
-  billingSame: z.boolean().default(true),
-  items: z.array(checkoutItemSchema).min(1, 'Cart cannot be empty'),
-});
+const checkoutSchema = z
+  .object({
+    storeName: z.string().optional().default(''),
+    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+    addressLine1: z.string().optional().default(''),
+    addressLine2: z.string().optional().default(''),
+    addressLine3: z.string().optional().default(''),
+    address: z.string().optional().default(''),
+    city: z.string().min(2, 'Town or city must be at least 2 characters'),
+    postcode: z.string().regex(ukPostcodeRegex, 'Please enter a valid UK postcode'),
+    email: z.string().email('Please enter a valid email address'),
+    phone: z.string().optional().or(z.literal('')),
+    billingSame: z.boolean().default(true),
+    items: z.array(checkoutItemSchema).min(1, 'Cart cannot be empty'),
+  })
+  .refine(
+    (data) => (data.addressLine1.trim() || data.address.trim()).length >= 3,
+    {
+      message: 'Please enter Address line 1',
+      path: ['addressLine1'],
+    }
+  );
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,12 +52,16 @@ export async function POST(req: NextRequest) {
     }
 
     const {
-      email,
+      storeName,
       fullName,
-      phone,
+      addressLine1,
+      addressLine2,
+      addressLine3,
       address,
       city,
       postcode,
+      email,
+      phone,
       billingSame,
       items,
     } = parsed.data;
@@ -335,13 +351,31 @@ export async function POST(req: NextRequest) {
     // =========================================================================
     // 5. INSERT PENDING ORDER INTO SUPABASE
     // =========================================================================
+    const line1 = (addressLine1 || address || '').trim();
+    const line2 = (addressLine2 || '').trim();
+    const line3 = (addressLine3 || '').trim();
+    const trimmedStore = (storeName || '').trim();
+    const cleanPostcode = postcode.trim().toUpperCase();
+
+    const deliveryAddressObj = {
+      store_name: trimmedStore || null,
+      line1,
+      line2: line2 || null,
+      line3: line3 || null,
+      town: city,
+      postcode: cleanPostcode,
+      address: [trimmedStore, line1, line2, line3, city, cleanPostcode]
+        .filter(Boolean)
+        .join(', '),
+    };
+
     const orderInsertPayload: any = {
       email,
       full_name: fullName,
       phone: phone || '',
-      address,
+      address: [line1, line2, line3].filter(Boolean).join(', '),
       city,
-      postcode: postcode.toUpperCase(),
+      postcode: cleanPostcode,
       billing_same: billingSame,
       subtotal,
       delivery_fee: deliveryFee,
@@ -352,16 +386,8 @@ export async function POST(req: NextRequest) {
       order_type: isTrade ? 'trade' : 'retail',
       channel: isTrade ? 'trade' : 'public',
       contact_name: fullName,
-      delivery_address: {
-        line1: address,
-        town: city,
-        postcode: postcode.toUpperCase(),
-      },
-      billing_address: {
-        line1: address,
-        town: city,
-        postcode: postcode.toUpperCase(),
-      },
+      delivery_address: deliveryAddressObj,
+      billing_address: deliveryAddressObj,
       subtotal_pence: subtotal,
       delivery_pence: deliveryFee,
       vat_pence: vatPence,

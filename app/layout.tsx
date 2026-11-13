@@ -15,12 +15,24 @@ export const metadata: Metadata = {
     template: "%s | Bits 'N' Bobs",
   },
   description:
-    'Serving your everyday needs since 1994. All the little things you always run out of. Pre-packed convenience products for homes and retailers across the UK.',
+    'Serving your everyday needs since 1994. All the Bits N Bobs you always run out of. Pre-packed convenience products for homes and retailers across the UK.',
+  keywords: [
+    'little things',
+    'essentials',
+    'capital',
+    'homeware essentials',
+    'dobsons',
+    'combs',
+    'lp marketing',
+    'bits n bobs',
+    'convenience products',
+    'retail stockist',
+  ],
   metadataBase: new URL('https://bitsnbobs.co'),
   openGraph: {
     title: "Bits 'N' Bobs | UK Supplier of Convenience Products",
     description:
-      'Serving your everyday needs since 1994. All the little things you always run out of. Pre-packed convenience products for homes and retailers across the UK.',
+      'Serving your everyday needs since 1994. All the Bits N Bobs you always run out of. Pre-packed convenience products for homes and retailers across the UK.',
     url: 'https://bitsnbobs.co',
     siteName: "Bits 'N' Bobs",
     images: [

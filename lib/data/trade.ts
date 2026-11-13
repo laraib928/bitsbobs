@@ -173,7 +173,7 @@ export async function getTradeShopData(categorySlug = 'all'): Promise<TradeShopD
 
       if (promoList && promoList.length > 0) {
         const p = promoList[0];
-        let targetHref = '/trade/shop';
+        let targetHref = '/trade/stands';
         if (p.category_id) {
           const matchedCat = dbCategories?.find((c) => c.id === p.category_id);
           if (matchedCat) targetHref = `/trade/shop/${matchedCat.slug}`;
@@ -389,6 +389,16 @@ export async function getTradeShopData(categorySlug = 'all'): Promise<TradeShopD
         count: 4,
       },
     ];
+  }
+
+  if (!activePromotion) {
+    activePromotion = {
+      id: 'f0000000-0000-0000-0000-000000000001',
+      title: 'Free Display Stand Offer',
+      description:
+        'Order our fastest-selling retail range of 80 different lines and get a FREE display stand worth over £100.',
+      targetHref: '/trade/stands',
+    };
   }
 
   return {

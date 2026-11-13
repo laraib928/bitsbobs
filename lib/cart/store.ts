@@ -6,6 +6,7 @@ import { SITE_CONFIG } from '../config';
 
 export interface PublicCartItem {
   productId: string;
+  slug?: string;
   name: string;
   image: string;
   pricePence: number;
@@ -14,6 +15,7 @@ export interface PublicCartItem {
 
 export interface TradeCartItem {
   productId: string;
+  slug?: string;
   name: string;
   image: string;
   sku: string;
@@ -61,6 +63,7 @@ export const useCartStore = create<CartState>()(
       publicItems: [
         {
           productId: 'b0000000-0000-0000-0000-000000000001',
+          slug: 'hair-grips',
           name: 'Hair Grips',
           image: '/images/hair-grips.jpg',
           pricePence: 99,
@@ -68,6 +71,7 @@ export const useCartStore = create<CartState>()(
         },
         {
           productId: 'b0000000-0000-0000-0000-000000000004',
+          slug: 'birthday-candles',
           name: 'Birthday Candles',
           image: '/images/birthday-candles.jpg',
           pricePence: 99,
@@ -117,6 +121,7 @@ export const useCartStore = create<CartState>()(
       tradeItems: [
         {
           productId: 'p-hair-grips',
+          slug: 'hair-grips',
           name: 'Hair Grips',
           image: '/images/hair-grips.jpg',
           sku: '321',
@@ -127,6 +132,7 @@ export const useCartStore = create<CartState>()(
         },
         {
           productId: 'p-nit-comb',
+          slug: 'nit-comb',
           name: 'Nit Combs',
           image: '/images/nit-comb.jpg',
           sku: '307',
@@ -137,6 +143,7 @@ export const useCartStore = create<CartState>()(
         },
         {
           productId: 'p-nail-scissors',
+          slug: 'nail-scissors',
           name: 'Nail Scissors',
           image: '/images/nail-scissors.jpg',
           sku: '309',
@@ -147,6 +154,7 @@ export const useCartStore = create<CartState>()(
         },
         {
           productId: 'p-birthday-candles',
+          slug: 'birthday-candles',
           name: 'Birthday Candles',
           image: '/images/birthday-candles.jpg',
           sku: '314',
@@ -157,6 +165,7 @@ export const useCartStore = create<CartState>()(
         },
         {
           productId: 'p-nail-glue',
+          slug: 'super-nail-glue',
           name: 'Nail Glue',
           image: '/images/nail-glue.jpg',
           sku: '304',

@@ -49,16 +49,16 @@ export function RetailerAccountOverview({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* 1. Trade promotion card (Only shown if active promotion exists) */}
         {activePromo && (
-          <section className="bg-brand-red text-white rounded-[20px] p-6 flex flex-col gap-2.5 shadow-sm">
+          <section className="bg-brand-red text-white rounded-[20px] p-6 flex flex-col gap-3 shadow-sm">
             <h2 className="m-0 text-[20px] font-extrabold">Trade promotion</h2>
-            <p className="m-0 text-[15px] leading-[1.5] text-white/90">
-              {activePromo.title} - {activePromo.description}
+            <p className="m-0 text-[15px] leading-[1.5] text-white/95 font-medium">
+              {activePromo.description || activePromo.title}
             </p>
             <Link
-              href={activePromo.targetHref}
-              className="self-start mt-auto inline-flex items-center h-10 px-4 rounded-full bg-white hover:bg-surface text-brand-red no-underline font-extrabold text-[14px] transition-colors shadow-sm"
+              href="/trade/stands"
+              className="self-start mt-auto inline-flex items-center h-10 px-5 rounded-full bg-white hover:bg-surface text-brand-red no-underline font-extrabold text-[14px] transition-colors shadow-sm"
             >
-              Shop the offer
+              View the range
             </Link>
           </section>
         )}

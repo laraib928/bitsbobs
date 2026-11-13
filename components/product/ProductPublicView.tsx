@@ -37,6 +37,7 @@ export function ProductPublicView({
     addPublicItem(
       {
         productId: product.id,
+        slug: product.slug,
         name: product.name,
         image: currentImage,
         pricePence: product.retailPricePence,
@@ -212,7 +213,7 @@ export function ProductPublicView({
           {/* Trade teaser banner */}
           <div className="border border-line rounded-[16px] p-4 sm:px-5 flex flex-wrap gap-3 items-center justify-between">
             <span className="text-[15px] text-text-2">
-              <strong className="text-ink">Run a shop?</strong> Buy packs of 6 at
+              <strong className="text-ink">Retailer?</strong> Buy packs of 6 at
               trade prices.
             </span>
             <span className="flex gap-3.5 font-bold text-[15px]">

@@ -669,9 +669,9 @@ export function ProductEditView({
             </div>
 
             <FormField
-              label="Product video (optional link to TikTok, Instagram or YouTube)"
+              label="Product video (optional link to TikTok or YouTube)"
               type="url"
-              placeholder="https://www.tiktok.com/@bitsnbobs/video/..."
+              placeholder="https://www.tiktok.com/@bitsnbobsmcr/video/..."
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
             />

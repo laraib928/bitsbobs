@@ -1,12 +1,27 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getCategories, getProducts } from '@/lib/data';
 import { StockistLogos } from '@/components/ui/StockistLogos';
 import { CategoryCard } from '@/components/ui/CategoryCard';
 import { FeaturedTabs } from '@/components/ui/FeaturedTabs';
+import { SEARCH_SYNONYMS } from '@/lib/search';
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Bits 'N' Bobs | UK Supplier of Convenience Products",
+  description:
+    'Serving your everyday needs since 1994. All the Bits N Bobs you always run out of. Pre-packed convenience products for homes and retailers across the UK.',
+  keywords: [
+    ...SEARCH_SYNONYMS,
+    'bits n bobs',
+    'convenience products',
+    'retail stockist',
+    'wholesale convenience products',
+  ],
+};
 
 function ProductPyramid({ className = '' }: { className?: string }) {
   return (
@@ -157,7 +172,7 @@ export default async function HomePage() {
               Handy. Pre-packed. Great value.
             </p>
             <h1 className="m-0 text-[clamp(34px,9vw,44px)] sm:text-[60px] lg:text-[clamp(48px,4.6vw,66px)] leading-[1.05] sm:leading-[0.98] lg:leading-[1.02] font-extrabold font-stretch-115 lg:[font-stretch:normal] lg:[font-variation-settings:'wdth'_100] tracking-[-0.02em]">
-              All the little<br className="hidden lg:inline" /> things you<br className="hidden lg:inline" /> always run out<br className="hidden lg:inline" /> of.
+              All the Bits N Bobs<br className="hidden lg:inline" /> you always<br className="hidden lg:inline" /> run out of.
             </h1>
 
             {/* Mobile Product Pyramid (Option B: centred under headline, max-w 330px, aspect-ratio 49/44) */}
@@ -167,8 +182,8 @@ export default async function HomePage() {
 
             <p className="m-0 text-[15px] sm:text-[20px] leading-[1.55] text-soft-on-dark max-w-[31em]">
               Combs, fuses, tape, party candles, kitchen tools and more. Buy one
-              or as many as you like, delivered to your door. Run a shop? Stock
-              the full range.
+              or as many as you like, delivered to your door. Retailer? Buy in
+              trade packs of 6 at trade prices.
             </p>
 
             {/* Buttons: on mobile 2 equal columns, height 52px; on md/desktop flex */}
@@ -208,7 +223,7 @@ export default async function HomePage() {
                   Products to choose from
                 </dt>
                 <dd className="m-0 mt-1 text-[20px] sm:text-[28px] lg:text-[34px] font-extrabold font-stretch-110">
-                  125
+                  300+
                 </dd>
               </div>
             </dl>
@@ -223,9 +238,11 @@ export default async function HomePage() {
       <div className="w-full bg-[#FFEC00] text-ink py-2.5 sm:py-3.5 border-y border-[#E6D400] overflow-hidden select-none">
         <div className="animate-marquee whitespace-nowrap flex items-center font-extrabold text-[14px] sm:text-[16px] tracking-wide">
           <div className="flex items-center gap-6 sm:gap-8 px-4">
-            <span>Everyday essentials from 99p</span>
+            <span>Everyday items from 99p</span>
             <span className="text-black/40">✦</span>
-            <span>125 handy products</span>
+            <span>High quality, great value</span>
+            <span className="text-black/40">✦</span>
+            <span>Over 300 products</span>
             <span className="text-black/40">✦</span>
             <span>Stocked in 10,000+ UK shops</span>
             <span className="text-black/40">✦</span>
@@ -237,9 +254,11 @@ export default async function HomePage() {
             <span className="text-black/40">✦</span>
           </div>
           <div className="flex items-center gap-6 sm:gap-8 px-4" aria-hidden="true">
-            <span>Everyday essentials from 99p</span>
+            <span>Everyday items from 99p</span>
             <span className="text-black/40">✦</span>
-            <span>125 handy products</span>
+            <span>High quality, great value</span>
+            <span className="text-black/40">✦</span>
+            <span>Over 300 products</span>
             <span className="text-black/40">✦</span>
             <span>Stocked in 10,000+ UK shops</span>
             <span className="text-black/40">✦</span>
@@ -256,13 +275,13 @@ export default async function HomePage() {
       {/* 3. Stockists Section */}
       <StockistLogos />
 
-      {/* 4. "Everyday essentials you can count on" (4 Coloured Benefit Cards) */}
+      {/* 4. "Everyday Bits N Bobs you can count on" (4 Coloured Benefit Cards) */}
       <section id="why" className="bg-white py-12 sm:py-[72px]">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-8 flex flex-col gap-8 sm:gap-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div>
               <h2 className="m-0 text-[32px] sm:text-[40px] lg:text-[44px] font-extrabold font-stretch-112 text-navy-deep tracking-[-0.01em] leading-tight">
-                Everyday essentials<br className="hidden sm:inline" /> you can count on
+                Everyday Bits N Bobs<br className="hidden sm:inline" /> you can count on
               </h2>
             </div>
             <p className="m-0 text-[15px] sm:text-[17px] text-text-2 leading-relaxed max-w-md">
@@ -280,7 +299,7 @@ export default async function HomePage() {
               </div>
               <div className="flex flex-col gap-1.5 mt-auto">
                 <h3 className="m-0 text-[20px] font-extrabold font-stretch-108 text-white">
-                  Good quality products
+                  High quality products
                 </h3>
                 <p className="m-0 text-[14px] leading-relaxed text-white/90">
                   Reliable everyday items, made to last.
@@ -300,7 +319,7 @@ export default async function HomePage() {
                   Convenient and affordable
                 </h3>
                 <p className="m-0 text-[14px] leading-relaxed text-ink/80">
-                  Handy essentials at friendly prices.
+                  Handy items at friendly prices.
                 </p>
               </div>
             </div>
@@ -342,39 +361,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 5. Shop by category (with individual light tint colours) */}
-      <section className="bg-white py-12 sm:py-16">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 flex flex-col gap-6 sm:gap-8">
-          <div className="flex justify-between items-center gap-3 flex-wrap">
-            <h2 className="m-0 text-[32px] sm:text-[40px] lg:text-[44px] font-extrabold font-stretch-112 text-navy-deep tracking-[-0.01em]">
-              Shop by category
-            </h2>
-            <Link
-              href="/shop"
-              className="inline-flex items-center justify-center h-10 px-5 rounded-full bg-navy-deep hover:bg-brand-navy text-white no-underline font-bold text-[14px] transition-colors shadow-sm"
-            >
-              View all products
-            </Link>
-          </div>
-
-          {/* 6 category cards with light tint colours */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {homeCategories.map((c) => (
-              <CategoryCard key={c.id} category={c} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Featured Products (Lilac background, white cards, red + Add button) */}
-      <FeaturedTabs
-        bestSellers={bestSellers}
-        newArrivals={newArrivals}
-        specialOffers={specialOffers}
-      />
-
-      {/* 7. Navy "Run a shop? Stock Bits N Bobs." Banner with stand photo on the right */}
-      <section className="bg-white py-12 sm:py-16">
+      {/* 5. Navy "Retailer?" Banner (directly after benefit cards, before Shop by category) */}
+      <section className="bg-white py-6 sm:py-10">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
           <div className="rounded-[28px] sm:rounded-[32px] overflow-hidden bg-navy-deep text-white shadow-xl grid grid-cols-1 lg:grid-cols-2 items-stretch">
             {/* Left Column: Text & Buttons */}
@@ -382,11 +370,11 @@ export default async function HomePage() {
               <span className="text-[13px] sm:text-[14px] font-bold text-brand-yellow uppercase tracking-wider">
                 For shops and retailers
               </span>
-              <h2 className="m-0 text-[32px] sm:text-[40px] lg:text-[46px] font-extrabold font-stretch-112 leading-[1.08] tracking-[-0.015em]">
-                Run a shop? Stock Bits N Bobs.
+              <h2 className="m-0 text-[36px] sm:text-[46px] lg:text-[52px] font-extrabold font-stretch-112 leading-[1.06] tracking-[-0.015em]">
+                Retailer?
               </h2>
-              <p className="m-0 text-[15px] sm:text-[18px] leading-[1.6] text-soft-on-dark max-w-[28em]">
-                Wholesale prices on packs of 6, display stands and free delivery on trade orders of £150 or more.
+              <p className="m-0 text-[16px] sm:text-[20px] leading-[1.5] text-soft-on-dark font-medium max-w-[28em]">
+                Buy in trade packs of 6 at trade prices.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Link
@@ -418,6 +406,37 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 6. Shop by category (with individual light tint colours) */}
+      <section className="bg-white py-10 sm:py-14">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 flex flex-col gap-6 sm:gap-8">
+          <div className="flex justify-between items-center gap-3 flex-wrap">
+            <h2 className="m-0 text-[32px] sm:text-[40px] lg:text-[44px] font-extrabold font-stretch-112 text-navy-deep tracking-[-0.01em]">
+              Shop by category
+            </h2>
+            <Link
+              href="/shop"
+              className="inline-flex items-center justify-center h-10 px-5 rounded-full bg-navy-deep hover:bg-brand-navy text-white no-underline font-bold text-[14px] transition-colors shadow-sm"
+            >
+              View all products
+            </Link>
+          </div>
+
+          {/* 6 category cards with light tint colours */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            {homeCategories.map((c) => (
+              <CategoryCard key={c.id} category={c} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Featured Products (Lilac background, white cards, red + Add button) */}
+      <FeaturedTabs
+        bestSellers={bestSellers}
+        newArrivals={newArrivals}
+        specialOffers={specialOffers}
+      />
     </div>
   );
 }

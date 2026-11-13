@@ -3,8 +3,10 @@ import { formatMoney } from '@/lib/money';
 import type { Json } from '@/lib/supabase/database.types';
 
 export interface AddressObject {
+  store_name?: string;
   line1?: string;
   line2?: string;
+  line3?: string;
   town?: string;
   postcode?: string;
   address?: string;
@@ -99,17 +101,21 @@ export function formatAddressObject(addr: Json | undefined | null): {
       ? raw.address
       : '';
   const line2 = typeof raw.line2 === 'string' ? raw.line2 : '';
+  const line3 = typeof raw.line3 === 'string' ? raw.line3 : '';
   const town = typeof raw.town === 'string' ? raw.town : '';
   const postcode = typeof raw.postcode === 'string' ? raw.postcode : '';
+  const storeName = typeof raw.store_name === 'string' ? raw.store_name : '';
 
   const obj: AddressObject = {
+    store_name: storeName,
     line1,
     line2,
+    line3,
     town,
     postcode,
   };
 
-  const parts = [line1, line2, town, postcode].filter(Boolean);
+  const parts = [storeName, line1, line2, line3, town, postcode].filter(Boolean);
   return {
     obj,
     formatted: parts.join(', '),
@@ -333,7 +339,7 @@ export async function getRetailerAccountData(): Promise<RetailerAccountData> {
     .gte('ends_at', now)
     .order('created_at', { ascending: false });
 
-  if (dbPromos) {
+  if (dbPromos && dbPromos.length > 0) {
     for (const p of dbPromos) {
       activePromotions.push({
         id: p.id,
@@ -341,9 +347,19 @@ export async function getRetailerAccountData(): Promise<RetailerAccountData> {
         description: p.description,
         startsAt: p.starts_at,
         endsAt: p.ends_at,
-        targetHref: '/trade/shop',
+        targetHref: '/trade/stands',
       });
     }
+  } else {
+    activePromotions.push({
+      id: 'f0000000-0000-0000-0000-000000000001',
+      title: 'Free Display Stand Offer',
+      description:
+        'Order our fastest-selling retail range of 80 different lines and get a FREE display stand worth over £100.',
+      startsAt: new Date().toISOString(),
+      endsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString(),
+      targetHref: '/trade/stands',
+    });
   }
 
   const lastOrder = orders.length > 0 ? orders[0] : null;

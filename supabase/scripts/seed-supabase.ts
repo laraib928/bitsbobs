@@ -435,8 +435,8 @@ async function seed() {
   const promotions = [
     {
       id: 'f0000000-0000-0000-0000-000000000001',
-      title: 'Free Trade Delivery',
-      description: 'Free carriage on trade orders over £150 ex VAT',
+      title: 'Free Display Stand Offer',
+      description: 'Order our fastest-selling retail range of 80 different lines and get a FREE display stand worth over £100.',
       audience: 'trade' as const,
       starts_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
       ends_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString(),

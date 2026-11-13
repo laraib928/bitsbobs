@@ -78,6 +78,7 @@ export function TradeProductCard({
     setTradePacks(
       {
         productId: product.id,
+        slug: product.slug,
         name: product.name,
         image: product.images[0] || '/images/false-nails.jpg',
         sku: product.code,
@@ -95,6 +96,7 @@ export function TradeProductCard({
     addPublicItem(
       {
         productId: product.id,
+        slug: product.slug,
         name: product.name,
         image: product.images[0] || '/images/false-nails.jpg',
         pricePence: product.retailPricePence,
@@ -292,6 +294,7 @@ export function TradeProductListRow({
     setTradePacks(
       {
         productId: product.id,
+        slug: product.slug,
         name: product.name,
         image: product.images[0] || '/images/false-nails.jpg',
         sku: product.code,
@@ -309,6 +312,7 @@ export function TradeProductListRow({
     addPublicItem(
       {
         productId: product.id,
+        slug: product.slug,
         name: product.name,
         image: product.images[0] || '/images/false-nails.jpg',
         pricePence: product.retailPricePence,

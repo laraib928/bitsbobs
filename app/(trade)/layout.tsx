@@ -4,6 +4,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ToastProvider } from '@/components/admin/ToastContext';
 import { getTradeShopData } from '@/lib/data/trade';
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton';
 
 export default async function TradeLayout({
   children,
@@ -19,6 +20,7 @@ export default async function TradeLayout({
         <Header variant="trade" tradeProfile={profile} />
         <main className="flex-1">{children}</main>
         <Footer />
+        <WhatsAppButton isTrade />
       </div>
     </ToastProvider>
   );

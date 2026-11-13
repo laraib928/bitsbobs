@@ -34,15 +34,36 @@ export async function tradeSignUpAction(input: TradeSignUpInput): Promise<AuthAc
   const data = parseResult.data;
   const supabase = await createClient();
 
+  const line1 = data.tradingAddressLine1?.trim() || data.tradingAddress?.trim() || '';
+  const line2 = data.tradingAddressLine2?.trim() || '';
+  const line3 = data.tradingAddressLine3?.trim() || '';
+  const town = data.tradingTown?.trim() || '';
+  const pc = data.tradingPostcode?.trim() || data.postcode?.trim() || '';
+
   const tradingAddressJson = {
-    line1: data.tradingAddress,
-    postcode: data.postcode,
+    line1,
+    line2,
+    line3,
+    town,
+    postcode: pc,
+    address: [line1, line2, line3, town, pc].filter(Boolean).join(', '),
   };
+
+  const deliveryLine1 = data.deliveryAddressLine1?.trim() || data.deliveryAddress?.trim() || '';
+  const deliveryLine2 = data.deliveryAddressLine2?.trim() || '';
+  const deliveryLine3 = data.deliveryAddressLine3?.trim() || '';
+  const deliveryTown = data.deliveryTown?.trim() || '';
+  const deliveryPc = data.deliveryPostcode?.trim() || '';
 
   const deliveryAddressJson = data.sameDelivery
     ? null
     : {
-        line1: data.deliveryAddress,
+        line1: deliveryLine1,
+        line2: deliveryLine2,
+        line3: deliveryLine3,
+        town: deliveryTown,
+        postcode: deliveryPc,
+        address: [deliveryLine1, deliveryLine2, deliveryLine3, deliveryTown, deliveryPc].filter(Boolean).join(', '),
       };
 
   const fullNotes = [

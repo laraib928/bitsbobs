@@ -47,6 +47,7 @@ export function ProductCard({
     e.preventDefault();
     addPublicItem({
       productId: product.id,
+      slug: product.slug,
       name: product.name,
       image: product.images[0] || '/images/hair-grips.jpg',
       pricePence: product.retailPricePence,

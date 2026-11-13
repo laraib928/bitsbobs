@@ -9,8 +9,25 @@ import {
   tradeSignUpAction,
   forgotPasswordAction,
 } from '@/lib/actions/auth';
+import { EyeIcon, EyeOffIcon } from '@/components/ui/Icons';
 
-export function TradeLoginStockistView() {
+interface AddressOption {
+  id: string;
+  line1: string;
+  line2: string;
+  line3?: string;
+  town: string;
+  postcode: string;
+  formatted: string;
+}
+
+interface TradeLoginStockistViewProps {
+  isLookupConfigured?: boolean;
+}
+
+export function TradeLoginStockistView({
+  isLookupConfigured = false,
+}: TradeLoginStockistViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/trade/shop';
@@ -21,6 +38,7 @@ export function TradeLoginStockistView() {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -31,23 +49,45 @@ export function TradeLoginStockistView() {
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [forgotError, setForgotError] = useState<string | null>(null);
 
-  // Registration fields
+  // Registration basic details
   const [businessName, setBusinessName] = useState('');
   const [contactName, setContactName] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
   const [retailType, setRetailType] = useState('Convenience store');
-  const [tradingAddress, setTradingAddress] = useState('');
-  const [postcode, setPostcode] = useState('');
   const [symbolGroup, setSymbolGroup] = useState('');
   const [sameDelivery, setSameDelivery] = useState(true);
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [vatNumber, setVatNumber] = useState('');
-  const [companyNumber, setCompanyNumber] = useState('');
   const [notes, setNotes] = useState('');
+  const [repVisit, setRepVisit] = useState(false);
+
+  // Trading address state
+  const [tradingPostcode, setTradingPostcode] = useState('');
+  const [tradingAddressLine1, setTradingAddressLine1] = useState('');
+  const [tradingAddressLine2, setTradingAddressLine2] = useState('');
+  const [tradingAddressLine3, setTradingAddressLine3] = useState('');
+  const [tradingTown, setTradingTown] = useState('');
+  const [tradingResults, setTradingResults] = useState<AddressOption[]>([]);
+  const [selectedTradingId, setSelectedTradingId] = useState('');
+  const [isSearchingTrading, setIsSearchingTrading] = useState(false);
+  const [tradingLookupError, setTradingLookupError] = useState<string | null>(null);
+
+  // Delivery address state
+  const [deliveryPostcode, setDeliveryPostcode] = useState('');
+  const [deliveryAddressLine1, setDeliveryAddressLine1] = useState('');
+  const [deliveryAddressLine2, setDeliveryAddressLine2] = useState('');
+  const [deliveryAddressLine3, setDeliveryAddressLine3] = useState('');
+  const [deliveryTown, setDeliveryTown] = useState('');
+  const [deliveryResults, setDeliveryResults] = useState<AddressOption[]>([]);
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState('');
+  const [isSearchingDelivery, setIsSearchingDelivery] = useState(false);
+  const [deliveryLookupError, setDeliveryLookupError] = useState<string | null>(null);
+
+  // Password fields
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [repVisit, setRepVisit] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [isRegistering, setIsRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSubmitted, setRegisterSubmitted] = useState(false);
@@ -57,6 +97,94 @@ export function TradeLoginStockistView() {
       setActiveTab('login');
     }
   }, [searchParams]);
+
+  const handleTradingLookup = async () => {
+    const pc = tradingPostcode.trim();
+    if (!pc) {
+      setTradingLookupError('Please enter a postcode');
+      return;
+    }
+    setTradingLookupError(null);
+    setIsSearchingTrading(true);
+    try {
+      const res = await fetch(`/api/address-lookup?postcode=${encodeURIComponent(pc)}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setTradingLookupError(data.error || 'No addresses found for this postcode.');
+        setTradingResults([]);
+      } else {
+        const addresses: AddressOption[] = data.addresses || [];
+        setTradingResults(addresses);
+        if (addresses.length === 0) {
+          setTradingLookupError('No addresses found for this postcode. Please type your address.');
+        } else if (data.postcode) {
+          setTradingPostcode(data.postcode);
+        }
+      }
+    } catch {
+      setTradingLookupError('Unable to look up postcode. Please enter your address manually.');
+    } finally {
+      setIsSearchingTrading(false);
+    }
+  };
+
+  const handleSelectTradingAddress = (id: string) => {
+    setSelectedTradingId(id);
+    const found = tradingResults.find((a) => a.id === id);
+    if (found) {
+      setTradingAddressLine1(found.line1);
+      setTradingAddressLine2(found.line2);
+      setTradingAddressLine3(found.line3 || '');
+      setTradingTown(found.town);
+      if (found.postcode) {
+        setTradingPostcode(found.postcode);
+      }
+    }
+  };
+
+  const handleDeliveryLookup = async () => {
+    const pc = deliveryPostcode.trim();
+    if (!pc) {
+      setDeliveryLookupError('Please enter a postcode');
+      return;
+    }
+    setDeliveryLookupError(null);
+    setIsSearchingDelivery(true);
+    try {
+      const res = await fetch(`/api/address-lookup?postcode=${encodeURIComponent(pc)}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setDeliveryLookupError(data.error || 'No addresses found for this postcode.');
+        setDeliveryResults([]);
+      } else {
+        const addresses: AddressOption[] = data.addresses || [];
+        setDeliveryResults(addresses);
+        if (addresses.length === 0) {
+          setDeliveryLookupError('No addresses found for this postcode. Please type your address.');
+        } else if (data.postcode) {
+          setDeliveryPostcode(data.postcode);
+        }
+      }
+    } catch {
+      setDeliveryLookupError('Unable to look up postcode. Please enter your address manually.');
+    } finally {
+      setIsSearchingDelivery(false);
+    }
+  };
+
+  const handleSelectDeliveryAddress = (id: string) => {
+    setSelectedDeliveryId(id);
+    const found = deliveryResults.find((a) => a.id === id);
+    if (found) {
+      setDeliveryAddressLine1(found.line1);
+      setDeliveryAddressLine2(found.line2);
+      setDeliveryAddressLine3(found.line3 || '');
+      setDeliveryTown(found.town);
+      if (found.postcode) {
+        setDeliveryPostcode(found.postcode);
+      }
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +214,27 @@ export function TradeLoginStockistView() {
     e.preventDefault();
     setRegisterError(null);
 
+    if (!tradingAddressLine1.trim()) {
+      setRegisterError('Please enter Address line 1 for your trading address.');
+      return;
+    }
+
+    if (!tradingPostcode.trim()) {
+      setRegisterError('Please enter a postcode for your trading address.');
+      return;
+    }
+
+    if (!sameDelivery) {
+      if (!deliveryAddressLine1.trim()) {
+        setRegisterError('Please enter Address line 1 for your delivery address.');
+        return;
+      }
+      if (!deliveryPostcode.trim()) {
+        setRegisterError('Please enter a postcode for your delivery address.');
+        return;
+      }
+    }
+
     if (registerPassword.length < 6) {
       setRegisterError('Password must be at least 6 characters long.');
       return;
@@ -105,13 +254,41 @@ export function TradeLoginStockistView() {
         telephone,
         email,
         businessType: retailType,
-        tradingAddress,
-        postcode,
+        tradingAddressLine1,
+        tradingAddressLine2,
+        tradingAddressLine3,
+        tradingTown,
+        tradingPostcode,
+        tradingAddress: [
+          tradingAddressLine1,
+          tradingAddressLine2,
+          tradingAddressLine3,
+          tradingTown,
+          tradingPostcode,
+        ]
+          .filter(Boolean)
+          .join(', '),
+        postcode: tradingPostcode,
         symbolGroup,
         sameDelivery,
-        deliveryAddress: sameDelivery ? '' : deliveryAddress,
-        vatNumber,
-        companyNumber,
+        deliveryAddressLine1: sameDelivery ? '' : deliveryAddressLine1,
+        deliveryAddressLine2: sameDelivery ? '' : deliveryAddressLine2,
+        deliveryAddressLine3: sameDelivery ? '' : deliveryAddressLine3,
+        deliveryTown: sameDelivery ? '' : deliveryTown,
+        deliveryPostcode: sameDelivery ? '' : deliveryPostcode,
+        deliveryAddress: sameDelivery
+          ? ''
+          : [
+              deliveryAddressLine1,
+              deliveryAddressLine2,
+              deliveryAddressLine3,
+              deliveryTown,
+              deliveryPostcode,
+            ]
+              .filter(Boolean)
+              .join(', '),
+        vatNumber: null,
+        companyNumber: null,
         notes,
         password: registerPassword,
         repVisit,
@@ -151,76 +328,108 @@ export function TradeLoginStockistView() {
   };
 
   return (
-    <div className="font-sans text-ink w-full flex flex-wrap min-h-screen">
-      {/* Left: Brand panel with pegboard pattern */}
-      <aside className="peg-pattern flex-1 basis-[480px] text-white p-8 sm:p-12 box-border flex flex-col gap-10">
+    <div className="font-sans text-ink w-full flex flex-col lg:flex-row min-h-screen">
+      {/* Left: Brand panel (solid navy #1D1650, stretches full height to footer, 45% width on desktop) */}
+      <aside className="w-full lg:w-[45%] flex-none bg-[#1D1650] text-white p-6 sm:p-10 lg:p-12 box-border flex flex-col gap-6 self-stretch">
+        {/* 1. Logo */}
         <Link href="/" aria-label="Bits N Bobs home" className="self-start">
           <Image
             src="/images/logo.png"
             alt="Bits 'N' Bobs"
             width={170}
             height={52}
-            className="h-[52px] w-auto block"
+            className="h-10 sm:h-[52px] w-auto block"
+            priority
           />
         </Link>
-        <div className="flex flex-col gap-4 max-w-[30em]">
-          <h1 className="m-0 text-[40px] sm:text-[50px] leading-[1.04] font-extrabold font-stretch-112">
-            Stock Bits N Bobs in your shop
-          </h1>
-          <p className="m-0 text-[18px] leading-[1.6] text-soft-on-dark">
-            For convenience stores, corner shops, CTNs, post offices and
-            independent retailers. Apply once, we approve your account, then you
-            see wholesale prices.
-          </p>
-        </div>
-        <ul className="m-0 p-0 list-none flex flex-col gap-3.5 text-[17px]">
-          <li className="flex gap-3 items-center">
+
+        {/* 2. Heading "For retailers and wholesale" (44px) */}
+        <h1 className="m-0 text-[32px] sm:text-[44px] leading-[1.08] font-extrabold font-stretch-112 text-white">
+          For retailers and wholesale
+        </h1>
+
+        {/* 3. Paragraph 18px pure white, line-height 1.6 */}
+        <p className="m-0 text-[18px] leading-[1.6] text-white">
+          For convenience stores, corner shops, CTNs, post offices and
+          independent retailers. Apply once, we approve your account, then you
+          see trade prices.
+        </p>
+
+        {/* 4. The 3 tick points: 17px white, line-height 1.6, bigger yellow ticks (28px) */}
+        <ul className="m-0 p-0 list-none flex flex-col gap-3.5">
+          <li className="flex gap-3.5 items-center text-[17px] text-white leading-[1.6]">
             <span
               aria-hidden="true"
-              className="w-[26px] h-[26px] rounded-full bg-brand-yellow text-ink flex items-center justify-center font-black text-[14px]"
+              className="w-[28px] h-[28px] min-w-[28px] rounded-full bg-brand-yellow text-ink flex items-center justify-center font-black text-[15px] flex-none shadow-sm"
             >
               ✓
             </span>
-            Wholesale prices on packs of 6
+            <span>Trade prices</span>
           </li>
-          <li className="flex gap-3 items-center">
+          <li className="flex gap-3.5 items-center text-[17px] text-white leading-[1.6]">
             <span
               aria-hidden="true"
-              className="w-[26px] h-[26px] rounded-full bg-brand-yellow text-ink flex items-center justify-center font-black text-[14px]"
+              className="w-[28px] h-[28px] min-w-[28px] rounded-full bg-brand-yellow text-ink flex items-center justify-center font-black text-[15px] flex-none shadow-sm"
             >
               ✓
             </span>
-            Fully stocked display stands
+            <span>All products sold in trade packs of 6</span>
           </li>
-          <li className="flex gap-3 items-center">
+          <li className="flex gap-3.5 items-center text-[17px] text-white leading-[1.6]">
             <span
               aria-hidden="true"
-              className="w-[26px] h-[26px] rounded-full bg-brand-yellow text-ink flex items-center justify-center font-black text-[14px]"
+              className="w-[28px] h-[28px] min-w-[28px] rounded-full bg-brand-yellow text-ink flex items-center justify-center font-black text-[15px] flex-none shadow-sm"
             >
               ✓
             </span>
-            Free delivery on orders of £150 or more
+            <span>Free delivery on orders of £150 or more</span>
           </li>
         </ul>
-        <figure className="m-0 mt-auto rounded-2xl overflow-hidden leading-none shadow-2xl">
+
+        {/* 5. Stand photo (full aspect ratio 1217/1292, not cropped, 100% width of panel, rounded) */}
+        <figure className="m-0 w-full rounded-[20px] overflow-hidden leading-none shadow-2xl bg-white/5 border border-white/10">
           <Image
             src="/images/stand.jpg"
-            alt="A Bits N Bobs display stand full of hanging packs"
+            alt="A Bits N Bobs display stand full of hanging packs in a shop"
             width={1217}
             height={1292}
+            sizes="(max-width: 1024px) 100vw, 560px"
             style={{
               width: '100%',
               height: 'auto',
               aspectRatio: '1217 / 1292',
             }}
-            className="block object-contain"
+            className="block w-full h-auto object-contain rounded-[20px]"
+            priority
           />
         </figure>
+
+        {/* 6. The 3 short steps: 17px white, line-height 1.6 */}
+        <ol className="m-0 p-0 list-none flex flex-col gap-3">
+          <li className="flex items-center gap-3.5 text-[17px] text-white leading-[1.6]">
+            <span className="text-[20px] font-extrabold text-brand-yellow font-stretch-112 flex-none w-7">
+              01
+            </span>
+            <span className="font-bold">Become a stockist</span>
+          </li>
+          <li className="flex items-center gap-3.5 text-[17px] text-white leading-[1.6]">
+            <span className="text-[20px] font-extrabold text-brand-yellow font-stretch-112 flex-none w-7">
+              02
+            </span>
+            <span className="font-bold">Order a fully stocked stand</span>
+          </li>
+          <li className="flex items-center gap-3.5 text-[17px] text-white leading-[1.6]">
+            <span className="text-[20px] font-extrabold text-brand-yellow font-stretch-112 flex-none w-7">
+              03
+            </span>
+            <span className="font-bold">Reorder packs of 6</span>
+          </li>
+        </ol>
       </aside>
 
-      {/* Right: Tabbed Forms */}
-      <main className="flex-1 basis-[520px] p-8 sm:p-14 box-border flex justify-center bg-white">
-        <div className="w-full max-w-[520px] flex flex-col gap-7">
+      {/* Right: Tabbed Forms (55% width on desktop, centred form with max-width 560px) */}
+      <main className="w-full lg:w-[55%] flex-1 p-6 sm:p-10 lg:p-14 box-border flex justify-center items-start bg-white min-w-0">
+        <div className="w-full max-w-[560px] flex flex-col gap-7">
           {/* Tab buttons */}
           <div
             role="tablist"
@@ -309,7 +518,9 @@ export function TradeLoginStockistView() {
                     Email address
                     <input
                       type="email"
+                      name="email"
                       required
+                      autoComplete="email username"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
                       placeholder="shop@retailer.co.uk"
@@ -363,24 +574,37 @@ export function TradeLoginStockistView() {
                   Email address
                   <input
                     type="email"
+                    name="email"
                     required
-                    autoComplete="email"
+                    autoComplete="username email"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     placeholder="shop@retailer.co.uk"
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
+
                 <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Password
-                  <input
-                    type="password"
-                    required
-                    autoComplete="current-password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showLoginPassword ? 'text' : 'password'}
+                      name="password"
+                      required
+                      autoComplete="current-password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      className="w-full h-12 border border-field-border rounded-[10px] pl-3.5 pr-11 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-3 p-1.5 text-muted hover:text-navy-deep border-0 bg-transparent cursor-pointer flex items-center justify-center transition-colors"
+                    >
+                      {showLoginPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                    </button>
+                  </div>
                 </label>
 
                 <div className="flex justify-between items-center text-[14px]">
@@ -422,28 +646,29 @@ export function TradeLoginStockistView() {
               <h2 className="m-0 text-[30px] font-extrabold text-navy-deep">
                 Application received!
               </h2>
-              <p className="text-[16px] text-text-2 leading-relaxed max-w-sm">
-                Thank you for applying to become a stockist. We check every
-                application and will email you at <strong>{email}</strong> as soon
-                as your trade account is activated (typically within 24 hours).
+              <p className="text-[16px] text-text-2 leading-relaxed max-w-md">
+                Thank you, {businessName.trim() || 'retailer'}. Your application has been received. We&apos;ll review it and email you at <strong>{email}</strong> as soon as your trade account is approved. Need it sooner? Call us on{' '}
+                <a
+                  href="tel:01618395050"
+                  className="text-brand-navy hover:underline font-bold whitespace-nowrap"
+                >
+                  0161 839 5050
+                </a>
+                .
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full justify-center">
                 <Link
                   href="/shop"
-                  className="h-12 px-6 rounded-xl bg-brand-navy text-white font-bold text-[15px] flex items-center justify-center no-underline hover:bg-[#231b64] transition-colors"
+                  className="h-12 px-6 rounded-xl bg-brand-navy text-white font-bold text-[15px] flex items-center justify-center no-underline hover:bg-[#231b64] transition-colors shadow-sm"
                 >
-                  Browse public shop
+                  Continue shopping
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRegisterSubmitted(false);
-                    setActiveTab('login');
-                  }}
-                  className="h-12 px-6 rounded-xl bg-surface text-ink font-bold text-[15px] border-0 cursor-pointer hover:bg-line transition-colors"
+                <Link
+                  href="/"
+                  className="h-12 px-6 rounded-xl bg-surface text-ink font-bold text-[15px] flex items-center justify-center no-underline hover:bg-line transition-colors"
                 >
-                  Return to login
-                </button>
+                  Back to home page
+                </Link>
               </div>
             </div>
           ) : (
@@ -469,44 +694,166 @@ export function TradeLoginStockistView() {
                 onSubmit={handleRegister}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-4"
               >
+                {/* 1. Store name */}
                 <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  Business name
+                  Store name
                   <input
                     type="text"
                     required
+                    name="organization"
+                    autoComplete="organization"
                     placeholder="Station Road Convenience"
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
-                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  Contact name
+
+                {/* 2. Full name */}
+                <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  Full name
                   <input
                     type="text"
                     required
+                    name="name"
                     autoComplete="name"
+                    placeholder="First and last name"
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
-                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  Telephone
+
+                {/* 3. Address line 1 */}
+                <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  Address line 1
                   <input
-                    type="tel"
+                    type="text"
                     required
-                    autoComplete="tel"
-                    value={telephone}
-                    onChange={(e) => setTelephone(e.target.value)}
+                    name="address-line1"
+                    autoComplete="address-line1"
+                    placeholder="Building name, shop number, or street"
+                    value={tradingAddressLine1}
+                    onChange={(e) => setTradingAddressLine1(e.target.value)}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
+
+                {/* 4. Address line 2 (optional) */}
+                <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  Address line 2 (optional)
+                  <input
+                    type="text"
+                    name="address-line2"
+                    autoComplete="address-line2"
+                    placeholder="Unit, suite, floor, etc."
+                    value={tradingAddressLine2}
+                    onChange={(e) => setTradingAddressLine2(e.target.value)}
+                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                  />
+                </label>
+
+                {/* 5. Address line 3 (optional) */}
+                <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  Address line 3 (optional)
+                  <input
+                    type="text"
+                    name="address-line3"
+                    autoComplete="address-line3"
+                    placeholder="Area, district or estate"
+                    value={tradingAddressLine3}
+                    onChange={(e) => setTradingAddressLine3(e.target.value)}
+                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                  />
+                </label>
+
+                {/* 6. Town or city */}
+                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  Town or city
+                  <input
+                    type="text"
+                    required
+                    name="address-level2"
+                    autoComplete="address-level2"
+                    placeholder="e.g. Manchester"
+                    value={tradingTown}
+                    onChange={(e) => setTradingTown(e.target.value)}
+                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                  />
+                </label>
+
+                {/* 7. Postcode with Find address lookup */}
+                <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  <label htmlFor="trading-postcode">Postcode</label>
+                  <div className="flex gap-2">
+                    <input
+                      id="trading-postcode"
+                      type="text"
+                      name="postal-code"
+                      autoComplete="postal-code"
+                      required
+                      placeholder="e.g. M1 1AE"
+                      value={tradingPostcode}
+                      onChange={(e) => {
+                        setTradingPostcode(e.target.value.toUpperCase());
+                        setTradingLookupError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleTradingLookup();
+                        }
+                      }}
+                      className="flex-1 h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy uppercase placeholder:normal-case"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTradingLookup}
+                      disabled={isSearchingTrading || !tradingPostcode.trim()}
+                      className="h-12 px-4 rounded-[10px] bg-brand-navy hover:bg-[#231b64] text-white font-sans font-bold text-[14px] cursor-pointer shadow-sm transition-colors disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {isSearchingTrading ? 'Finding...' : 'Find address'}
+                    </button>
+                  </div>
+                </div>
+
+                {tradingLookupError && (
+                  <div className="col-span-full p-2.5 rounded-lg bg-red-50 border border-red-200 text-danger text-[13px] font-medium">
+                    {tradingLookupError}
+                  </div>
+                )}
+
+                {tradingResults.length > 0 && (
+                  <div className="col-span-full flex flex-col gap-1.5">
+                    <label
+                      htmlFor="trading-address-dropdown"
+                      className="text-[13px] font-semibold text-text-2"
+                    >
+                      Select your address ({tradingResults.length} found)
+                    </label>
+                    <select
+                      id="trading-address-dropdown"
+                      value={selectedTradingId}
+                      onChange={(e) => handleSelectTradingAddress(e.target.value)}
+                      className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[15px] text-ink bg-white outline-none focus:border-brand-navy"
+                    >
+                      <option value="">-- Choose your address to fill fields --</option>
+                      {tradingResults.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.formatted}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* 8. Email */}
                 <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Email
                   <input
                     type="email"
                     required
+                    name="email"
                     autoComplete="email"
                     placeholder="you@yourshop.co.uk"
                     value={email}
@@ -514,6 +861,23 @@ export function TradeLoginStockistView() {
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
+
+                {/* 9. Phone */}
+                <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  Phone
+                  <input
+                    type="tel"
+                    required
+                    name="tel"
+                    autoComplete="tel"
+                    placeholder="0161 123 4567"
+                    value={telephone}
+                    onChange={(e) => setTelephone(e.target.value)}
+                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                  />
+                </label>
+
+                {/* 10. Business Type */}
                 <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Type of retail business
                   <select
@@ -529,39 +893,21 @@ export function TradeLoginStockistView() {
                     <option>Other independent retailer</option>
                   </select>
                 </label>
+
+                {/* 11. Symbol Group */}
                 <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  Trading address
-                  <input
-                    type="text"
-                    required
-                    autoComplete="street-address"
-                    value={tradingAddress}
-                    onChange={(e) => setTradingAddress(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
-                </label>
-                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  Postcode
-                  <input
-                    type="text"
-                    required
-                    autoComplete="postal-code"
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
-                </label>
-                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Symbol group (optional)
                   <input
                     type="text"
-                    placeholder="Nisa, SPAR, independent"
+                    placeholder="Nisa, SPAR, Premier, Costcutter, independent..."
                     value={symbolGroup}
                     onChange={(e) => setSymbolGroup(e.target.value)}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
-                <label className="col-span-full flex gap-2.5 items-center text-[15px] cursor-pointer">
+
+                {/* 12. Delivery Same as Trading Checkbox */}
+                <label className="col-span-full flex gap-2.5 items-center text-[15px] cursor-pointer pt-1">
                   <input
                     type="checkbox"
                     checked={sameDelivery}
@@ -570,35 +916,142 @@ export function TradeLoginStockistView() {
                   />
                   Delivery address is the same as trading address
                 </label>
+
+                {/* Delivery Address Section (when sameDelivery is false) */}
                 {!sameDelivery && (
-                  <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                    Delivery address (if different)
-                    <input
-                      type="text"
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                    />
-                  </label>
+                  <div className="col-span-full flex flex-col gap-3.5 pt-2 border-t border-line/60">
+                    <span className="text-[15px] font-bold text-navy-deep">
+                      Delivery address
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Delivery Address line 1 */}
+                      <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                        Address line 1
+                        <input
+                          type="text"
+                          required
+                          name="shipping-address-line1"
+                          autoComplete="shipping address-line1"
+                          placeholder="Building name, unit number, or street"
+                          value={deliveryAddressLine1}
+                          onChange={(e) => setDeliveryAddressLine1(e.target.value)}
+                          className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                        />
+                      </label>
+
+                      {/* Delivery Address line 2 (optional) */}
+                      <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                        Address line 2 (optional)
+                        <input
+                          type="text"
+                          name="shipping-address-line2"
+                          autoComplete="shipping address-line2"
+                          placeholder="Unit, suite, floor, etc."
+                          value={deliveryAddressLine2}
+                          onChange={(e) => setDeliveryAddressLine2(e.target.value)}
+                          className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                        />
+                      </label>
+
+                      {/* Delivery Address line 3 (optional) */}
+                      <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                        Address line 3 (optional)
+                        <input
+                          type="text"
+                          name="shipping-address-line3"
+                          autoComplete="shipping address-line3"
+                          placeholder="Area, district or estate"
+                          value={deliveryAddressLine3}
+                          onChange={(e) => setDeliveryAddressLine3(e.target.value)}
+                          className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                        />
+                      </label>
+
+                      {/* Delivery Town or city */}
+                      <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                        Town or city
+                        <input
+                          type="text"
+                          required
+                          name="shipping-address-level2"
+                          autoComplete="shipping address-level2"
+                          placeholder="e.g. Manchester"
+                          value={deliveryTown}
+                          onChange={(e) => setDeliveryTown(e.target.value)}
+                          className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                        />
+                      </label>
+
+                      {/* Delivery Postcode with lookup */}
+                      <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                        <label htmlFor="delivery-postcode">Postcode</label>
+                        <div className="flex gap-2">
+                          <input
+                            id="delivery-postcode"
+                            type="text"
+                            required
+                            name="shipping-postal-code"
+                            autoComplete="shipping postal-code"
+                            placeholder="e.g. M1 1AE"
+                            value={deliveryPostcode}
+                            onChange={(e) => {
+                              setDeliveryPostcode(e.target.value.toUpperCase());
+                              setDeliveryLookupError(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleDeliveryLookup();
+                              }
+                            }}
+                            className="flex-1 h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy uppercase placeholder:normal-case"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleDeliveryLookup}
+                            disabled={isSearchingDelivery || !deliveryPostcode.trim()}
+                            className="h-12 px-4 rounded-[10px] bg-brand-navy hover:bg-[#231b64] text-white font-sans font-bold text-[14px] cursor-pointer shadow-sm transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {isSearchingDelivery ? 'Finding...' : 'Find address'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {deliveryLookupError && (
+                        <div className="col-span-full p-2.5 rounded-lg bg-red-50 border border-red-200 text-danger text-[13px] font-medium">
+                          {deliveryLookupError}
+                        </div>
+                      )}
+
+                      {deliveryResults.length > 0 && (
+                        <div className="col-span-full flex flex-col gap-1.5">
+                          <label
+                            htmlFor="delivery-address-dropdown"
+                            className="text-[13px] font-semibold text-text-2"
+                          >
+                            Select delivery address ({deliveryResults.length} found)
+                          </label>
+                          <select
+                            id="delivery-address-dropdown"
+                            value={selectedDeliveryId}
+                            onChange={(e) => handleSelectDeliveryAddress(e.target.value)}
+                            className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[15px] text-ink bg-white outline-none focus:border-brand-navy"
+                          >
+                            <option value="">-- Choose your address to fill fields --</option>
+                            {deliveryResults.map((item) => (
+                              <option key={item.id} value={item.id}>
+                                {item.formatted}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
-                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  VAT number (if applicable)
-                  <input
-                    type="text"
-                    value={vatNumber}
-                    onChange={(e) => setVatNumber(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
-                </label>
-                <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  Company number (optional)
-                  <input
-                    type="text"
-                    value={companyNumber}
-                    onChange={(e) => setCompanyNumber(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
-                </label>
+
+                {/* 10. Anything else we should know */}
                 <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Anything else we should know?
                   <textarea
@@ -608,29 +1061,59 @@ export function TradeLoginStockistView() {
                     className="min-h-[88px] border border-field-border rounded-[10px] p-3 font-sans font-normal text-[16px] text-ink bg-white outline-none resize-y focus:border-brand-navy"
                   />
                 </label>
+
+                {/* 11. Create Password with Show/Hide Eye Toggle */}
                 <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Create a password
-                  <input
-                    type="password"
-                    required
-                    autoComplete="new-password"
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showRegisterPassword ? 'text' : 'password'}
+                      required
+                      name="password"
+                      autoComplete="new-password"
+                      placeholder="At least 6 characters"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      className="w-full h-12 border border-field-border rounded-[10px] pl-3.5 pr-11 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-3 p-1.5 text-muted hover:text-navy-deep border-0 bg-transparent cursor-pointer flex items-center justify-center transition-colors"
+                    >
+                      {showRegisterPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                    </button>
+                  </div>
                 </label>
+
+                {/* 12. Confirm Password with Show/Hide Eye Toggle */}
                 <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                   Confirm password
-                  <input
-                    type="password"
-                    required
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      required
+                      name="confirmPassword"
+                      autoComplete="new-password"
+                      placeholder="Repeat your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full h-12 border border-field-border rounded-[10px] pl-3.5 pr-11 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-3 p-1.5 text-muted hover:text-navy-deep border-0 bg-transparent cursor-pointer flex items-center justify-center transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                    </button>
+                  </div>
                 </label>
-                <label className="col-span-full flex gap-2.5 items-start text-[15px] leading-snug cursor-pointer">
+
+                {/* 13. Sales Rep Checkbox */}
+                <label className="col-span-full flex gap-2.5 items-start text-[15px] leading-snug cursor-pointer pt-1">
                   <input
                     type="checkbox"
                     checked={repVisit}
@@ -639,6 +1122,8 @@ export function TradeLoginStockistView() {
                   />
                   I would like a rep to visit about a display stand
                 </label>
+
+                {/* Submit button */}
                 <button
                   type="submit"
                   disabled={isRegistering}
@@ -647,87 +1132,6 @@ export function TradeLoginStockistView() {
                   {isRegistering ? 'Submitting application...' : 'Apply to become a stockist'}
                 </button>
               </form>
-
-              {/* Stand Section under the form */}
-              <div className="mt-8 pt-8 border-t border-line flex flex-col gap-6">
-                <div className="rounded-[24px] overflow-hidden bg-navy-deep text-white shadow-md">
-                  <figure className="m-0 w-full bg-[#2A2170] leading-none overflow-hidden">
-                    <Image
-                      src="/images/stand.jpg"
-                      alt="Bits N Bobs display stand full of hanging packs in a shop aisle"
-                      width={1217}
-                      height={1292}
-                      sizes="(max-width: 768px) 100vw, 520px"
-                      style={{
-                        width: '100%',
-                        height: 'auto',
-                        aspectRatio: '1217 / 1292',
-                      }}
-                      className="block w-full h-auto object-contain"
-                    />
-                  </figure>
-                  <div className="p-6 sm:p-8 flex flex-col gap-5">
-                    <div>
-                      <p className="m-0 mb-1.5 text-[13px] font-bold text-brand-yellow uppercase tracking-wider">
-                        Retail display stand
-                      </p>
-                      <h3 className="m-0 text-[24px] sm:text-[28px] font-extrabold font-stretch-110">
-                        Make the most of your space
-                      </h3>
-                      <p className="mt-2 mb-0 text-[14px] sm:text-[15px] leading-[1.6] text-[#D6D4EE]">
-                        A spare metre of wall becomes a steady stream of small sales. Order a fully stocked display stand, every pack pre-priced and bar-coded, and our rep comes back regularly to keep every hook full.
-                      </p>
-                    </div>
-
-                    <ol className="m-0 p-0 list-none flex flex-col">
-                      <li className="grid grid-cols-[40px_1fr] gap-3.5 py-3 border-t border-white/15">
-                        <span className="text-[24px] sm:text-[26px] font-extrabold text-brand-yellow font-stretch-112">
-                          01
-                        </span>
-                        <span>
-                          <strong className="block text-[15px] sm:text-[16px] text-white">
-                            Become a stockist
-                          </strong>
-                          <span className="text-[#D6D4EE] text-[13px] sm:text-[14px]">
-                            Apply online. We approve your trade account.
-                          </span>
-                        </span>
-                      </li>
-                      <li className="grid grid-cols-[40px_1fr] gap-3.5 py-3 border-t border-white/15">
-                        <span className="text-[24px] sm:text-[26px] font-extrabold text-brand-yellow font-stretch-112">
-                          02
-                        </span>
-                        <span>
-                          <strong className="block text-[15px] sm:text-[16px] text-white">
-                            Order a fully stocked stand
-                          </strong>
-                          <span className="text-[#D6D4EE] text-[13px] sm:text-[14px]">
-                            See every product and quantity on the stand before you buy.
-                          </span>
-                        </span>
-                      </li>
-                      <li className="grid grid-cols-[40px_1fr] gap-3.5 py-3 border-t border-b border-white/15">
-                        <span className="text-[24px] sm:text-[26px] font-extrabold text-brand-yellow font-stretch-112">
-                          03
-                        </span>
-                        <span>
-                          <strong className="block text-[15px] sm:text-[16px] text-white">
-                            Reorder packs of 6
-                          </strong>
-                          <span className="text-[#D6D4EE] text-[13px] sm:text-[14px]">
-                            Free delivery on trade orders of £150 or more.
-                          </span>
-                        </span>
-                      </li>
-                    </ol>
-
-                    <div className="p-3.5 rounded-xl bg-white/10 flex items-center gap-2.5 text-[14px] font-semibold text-brand-yellow">
-                      <span className="text-base">🚚</span>
-                      <span>Free delivery on trade orders of £150 or more</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </>
           )}
 

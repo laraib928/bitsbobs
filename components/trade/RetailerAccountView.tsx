@@ -53,7 +53,7 @@ export function RetailerAccountView({ orders, profile }: RetailerAccountViewProp
       {/* Account top bar */}
       <header className="bg-white border-b border-line">
         <div className="max-w-[1320px] mx-auto px-8 py-4 flex flex-wrap gap-4 items-center justify-between">
-          <Link href="/trade/shop" aria-label="Bits N Bobs home">
+          <Link href="/" aria-label="Bits N Bobs home">
             <Image
               src="/images/logo.png"
               alt="Bits 'N' Bobs"
@@ -158,17 +158,17 @@ export function RetailerAccountView({ orders, profile }: RetailerAccountViewProp
             {/* Card 1: Trade promotion */}
             <section
               id="promo"
-              className="bg-brand-red text-white rounded-[20px] p-6 flex flex-col gap-2.5 shadow-sm"
+              className="bg-brand-red text-white rounded-[20px] p-6 flex flex-col gap-3 shadow-sm"
             >
               <h2 className="m-0 text-[20px] font-extrabold">Trade promotion</h2>
-              <p className="m-0 text-[16px] leading-[1.5]">
-                [Current trade offer, set in admin]
+              <p className="m-0 text-[15px] leading-[1.5] text-white/95 font-medium">
+                Order our fastest-selling retail range of 80 different lines and get a FREE display stand worth over £100.
               </p>
               <Link
-                href="/trade/shop?tab=offers"
-                className="self-start mt-auto inline-flex items-center h-11 px-[18px] rounded-full bg-white hover:bg-surface text-brand-red no-underline font-extrabold transition-colors shadow-sm"
+                href="/trade/stands"
+                className="self-start mt-auto inline-flex items-center h-10 px-5 rounded-full bg-white hover:bg-surface text-brand-red no-underline font-extrabold text-[14px] transition-colors shadow-sm"
               >
-                Shop the offer
+                View the range
               </Link>
             </section>
 

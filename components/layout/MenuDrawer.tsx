@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CloseIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/ui/Icons';
+import { CloseIcon, ChevronDownIcon, ChevronUpIcon, FacebookIcon, TikTokIcon } from '@/components/ui/Icons';
 import { SITE_CONFIG } from '@/lib/config';
 
 interface MenuDrawerProps {
@@ -247,8 +247,8 @@ export function MenuDrawer({ isOpen, onClose, triggerRef }: MenuDrawerProps) {
           Contact us
         </Link>
 
-        {/* Bottom CTA */}
-        <div className="mt-auto pt-6 flex flex-col gap-2.5">
+        {/* Bottom CTA & Social Links */}
+        <div className="mt-auto pt-6 flex flex-col gap-3">
           <Link
             href="/trade"
             onClick={onClose}
@@ -262,6 +262,26 @@ export function MenuDrawer({ isOpen, onClose, triggerRef }: MenuDrawerProps) {
           >
             Call us: {SITE_CONFIG.phone}
           </a>
+          <div className="flex items-center justify-center gap-3 pt-1 border-t border-white/10">
+            <a
+              href={SITE_CONFIG.socialLinks.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Bits N Bobs on Facebook"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            >
+              <FacebookIcon size={18} />
+            </a>
+            <a
+              href={SITE_CONFIG.socialLinks.tiktok}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Bits N Bobs on TikTok"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            >
+              <TikTokIcon size={18} />
+            </a>
+          </div>
         </div>
       </nav>
     </div>

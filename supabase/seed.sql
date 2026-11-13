@@ -572,7 +572,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- 11. Promotions
 INSERT INTO public.promotions (id, title, description, audience, starts_at, ends_at, is_active)
 VALUES
-  ('f0000000-0000-0000-0000-000000000001', 'Free Trade Delivery', 'Free carriage on trade orders over £150 ex VAT', 'trade', NOW(), NOW() + INTERVAL '10 years', true),
+  ('f0000000-0000-0000-0000-000000000001', 'Free Display Stand Offer', 'Order our fastest-selling retail range of 80 different lines and get a FREE display stand worth over £100.', 'trade', NOW(), NOW() + INTERVAL '10 years', true),
   ('f0000000-0000-0000-0000-000000000002', 'Special Offers On Selected Lines', 'Great value on essential convenience lines', 'both', NOW(), NOW() + INTERVAL '10 years', true)
 ON CONFLICT (id) DO UPDATE SET
   title = EXCLUDED.title,

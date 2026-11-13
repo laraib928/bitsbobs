@@ -26,7 +26,7 @@ export async function generateMetadata({
 
   return {
     title: `${category.name} | Bits N Bobs`,
-    description: `Shop Bits N Bobs ${category.name} range. Handy, pre-packed everyday essentials delivered to your door. All items priced with VAT included.`,
+    description: `Shop Bits N Bobs ${category.name} range. Handy, pre-packed everyday items delivered to your door. All items priced with VAT included.`,
   };
 }
 

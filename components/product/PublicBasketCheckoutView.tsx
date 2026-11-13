@@ -58,13 +58,32 @@ function CheckoutForm() {
   const removePublicItem = useCartStore((state) => state.removePublicItem);
 
   // Form inputs
-  const [email, setEmail] = useState('');
+  const [storeName, setStoreName] = useState('');
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
+  const [addressLine2, setAddressLine2] = useState('');
+  const [addressLine3, setAddressLine3] = useState('');
   const [city, setCity] = useState('');
   const [postcode, setPostcode] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [billingSame, setBillingSame] = useState(true);
+
+  // Postcode lookup state
+  const [isSearchingPostcode, setIsSearchingPostcode] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [addressResults, setAddressResults] = useState<
+    Array<{
+      id: string;
+      line1: string;
+      line2: string;
+      line3?: string;
+      town: string;
+      postcode: string;
+      formatted: string;
+    }>
+  >([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
 
   // UI state
   const [isProcessing, setIsProcessing] = useState(false);
@@ -73,6 +92,50 @@ function CheckoutForm() {
   const deliveryFee = getDeliveryFee(subtotalPence);
   const totalPence = subtotalPence + deliveryFee;
   const subtotalFormatted = formatMoney(subtotalPence, { allowPenceOnly: true });
+
+  const handlePostcodeLookup = async () => {
+    const pc = postcode.trim();
+    if (!pc) {
+      setLookupError('Please enter a postcode');
+      return;
+    }
+    setLookupError(null);
+    setIsSearchingPostcode(true);
+    try {
+      const res = await fetch(`/api/address-lookup?postcode=${encodeURIComponent(pc)}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setLookupError(data.error || 'No addresses found for this postcode.');
+        setAddressResults([]);
+      } else {
+        const addresses = data.addresses || [];
+        setAddressResults(addresses);
+        if (addresses.length === 0) {
+          setLookupError('No addresses found for this postcode. Please enter manually.');
+        } else if (data.postcode) {
+          setPostcode(data.postcode);
+        }
+      }
+    } catch {
+      setLookupError('Unable to look up postcode. Please enter your address manually.');
+    } finally {
+      setIsSearchingPostcode(false);
+    }
+  };
+
+  const handleSelectAddress = (id: string) => {
+    setSelectedAddressId(id);
+    const found = addressResults.find((a) => a.id === id);
+    if (found) {
+      setAddressLine1(found.line1 || '');
+      setAddressLine2(found.line2 || '');
+      setAddressLine3(found.line3 || '');
+      setCity(found.town || '');
+      if (found.postcode) {
+        setPostcode(found.postcode);
+      }
+    }
+  };
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,16 +146,12 @@ function CheckoutForm() {
     }
 
     // 1. Validate customer details
-    if (!email.trim() || !email.includes('@')) {
-      setErrorMessage('Please enter a valid email address.');
-      return;
-    }
     if (fullName.trim().length < 2) {
       setErrorMessage('Please enter your full name (at least 2 characters).');
       return;
     }
-    if (address.trim().length < 5) {
-      setErrorMessage('Please enter your street address.');
+    if (addressLine1.trim().length < 3) {
+      setErrorMessage('Please enter Address line 1.');
       return;
     }
     if (city.trim().length < 2) {
@@ -103,6 +162,10 @@ function CheckoutForm() {
       setErrorMessage(
         'Please enter a valid UK postcode (e.g. SW1A 1AA or M1 1AE).'
       );
+      return;
+    }
+    if (!email.trim() || !email.includes('@')) {
+      setErrorMessage('Please enter a valid email address.');
       return;
     }
 
@@ -130,12 +193,16 @@ function CheckoutForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email.trim(),
+          storeName: storeName.trim(),
           fullName: fullName.trim(),
-          phone: phone.trim(),
-          address: address.trim(),
+          addressLine1: addressLine1.trim(),
+          addressLine2: addressLine2.trim(),
+          addressLine3: addressLine3.trim(),
+          address: addressLine1.trim(),
           city: city.trim(),
           postcode: postcode.trim().toUpperCase(),
+          email: email.trim(),
+          phone: phone.trim(),
           billingSame,
           items: items.map((i) => ({
             productId: i.productId,
@@ -180,9 +247,17 @@ function CheckoutForm() {
     <div className="bg-surface w-full min-h-[calc(100vh-140px)]">
       <main className="max-w-[1320px] mx-auto px-4 sm:px-8 py-6 sm:py-9 pb-28 sm:pb-20 flex flex-col gap-4 sm:gap-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2 sm:gap-3">
-          <h1 className="m-0 text-[30px] min-[400px]:text-[32px] sm:text-[38px] lg:text-[44px] font-extrabold font-stretch-112 text-navy-deep leading-tight">
-            Your basket
-          </h1>
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            <h1 className="m-0 text-[30px] min-[400px]:text-[32px] sm:text-[38px] lg:text-[44px] font-extrabold font-stretch-112 text-navy-deep leading-tight">
+              Your basket
+            </h1>
+            <Link
+              href="/shop"
+              className="inline-flex items-center text-[13px] sm:text-[14px] font-bold text-brand-navy hover:text-brand-red no-underline transition-colors"
+            >
+              ← Continue shopping
+            </Link>
+          </div>
           <span className="flex items-center gap-1.5 sm:gap-2 text-[14px] sm:text-[15px] text-text-2 font-semibold">
             <LockIcon size={18} className="text-success flex-none" />
             Secure checkout
@@ -195,105 +270,137 @@ function CheckoutForm() {
         >
           {/* Basket Items (order-1 on mobile, col 1 row 1 on desktop) */}
           <section className="order-1 lg:col-start-1 lg:row-start-1 bg-white border border-line rounded-[16px] sm:rounded-[20px] p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-[#EEEFF4]">
+              <h2 className="m-0 text-[20px] sm:text-[22px] font-extrabold text-ink">
+                1. Basket items
+              </h2>
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-1.5 text-[14px] font-bold text-brand-navy hover:text-brand-red no-underline transition-colors"
+              >
+                ← Continue shopping
+              </Link>
+            </div>
+
             {items.length === 0 ? (
-              <div className="py-8 text-center text-muted">
-                <p className="text-lg">Your basket is empty.</p>
+              <div className="py-10 text-center text-muted flex flex-col items-center gap-3">
+                <p className="text-lg m-0 text-ink font-bold">Your basket is empty.</p>
+                <p className="text-[15px] m-0 text-muted">Looks like you haven&apos;t added any items to your basket yet.</p>
                 <Link
                   href="/shop"
-                  className="inline-block mt-2 font-bold text-brand-navy hover:underline"
+                  className="mt-2 inline-flex items-center h-12 px-6 rounded-xl bg-brand-navy hover:bg-[#231b64] text-white font-bold text-[15px] no-underline transition-colors shadow-sm"
                 >
-                  Browse products
+                  Continue shopping
                 </Link>
               </div>
             ) : (
-              items.map((item) => (
-                <div
-                  key={item.productId}
-                  className="flex flex-col sm:grid sm:grid-cols-[72px_minmax(0,1fr)_auto_auto] gap-3 sm:gap-4 py-3.5 border-b border-[#EEEFF4] last:border-b-0"
-                >
-                  {/* Line 1 on mobile: Image + Name + Remove */}
-                  <div className="flex items-center gap-3 min-w-0 sm:contents">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={72}
-                      height={72}
-                      className="w-[56px] h-[56px] sm:w-[72px] sm:h-[72px] flex-none object-contain border border-[#EEEFF4] rounded-xl p-1 bg-white"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <strong className="block text-[15px] sm:text-[17px] text-ink font-bold truncate sm:whitespace-normal">
-                        {item.name}
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={() => removePublicItem(item.productId)}
-                        disabled={isProcessing}
-                        className="text-[13px] sm:text-[14px] text-muted hover:text-danger border-0 bg-transparent p-0 cursor-pointer text-left transition-colors disabled:opacity-50 min-h-[32px] sm:min-h-0 flex items-center"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
+              <>
+                {items.map((item) => {
+                  const productHref = item.slug ? `/products/${item.slug}` : `/products/${item.productId}`;
+                  return (
+                    <div
+                      key={item.productId}
+                      className="flex flex-col sm:grid sm:grid-cols-[72px_minmax(0,1fr)_auto_auto] gap-3 sm:gap-4 py-3.5 border-b border-[#EEEFF4] last:border-b-0"
+                    >
+                      {/* Line 1 on mobile: Image + Name + Remove */}
+                      <div className="flex items-center gap-3 min-w-0 sm:contents">
+                        <Link href={productHref} className="flex-none block group">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            width={72}
+                            height={72}
+                            className="w-[56px] h-[56px] sm:w-[72px] sm:h-[72px] flex-none object-contain border border-[#EEEFF4] rounded-xl p-1 bg-white group-hover:border-brand-navy transition-colors"
+                          />
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            href={productHref}
+                            className="block text-[15px] sm:text-[17px] text-ink font-bold truncate sm:whitespace-normal no-underline hover:text-brand-navy hover:underline transition-colors"
+                          >
+                            {item.name}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => removePublicItem(item.productId)}
+                            disabled={isProcessing}
+                            className="text-[13px] sm:text-[14px] text-muted hover:text-danger border-0 bg-transparent p-0 cursor-pointer text-left transition-colors disabled:opacity-50 min-h-[32px] sm:min-h-0 flex items-center"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
 
-                  {/* Line 2 on mobile: Stepper + Line Total */}
-                  <div className="flex items-center justify-between sm:contents pt-1 sm:pt-0">
-                    {/* Stepper */}
-                    <div className="grid grid-cols-[40px_44px_40px] h-11 border border-field-border rounded-full overflow-hidden bg-white">
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() =>
-                          updatePublicQuantity(
-                            item.productId,
-                            item.quantity - 1
-                          )
-                        }
-                        aria-label="Remove one"
-                        className="border-0 bg-transparent text-[18px] font-bold text-brand-navy hover:bg-surface cursor-pointer flex items-center justify-center disabled:opacity-50"
-                      >
-                        −
-                      </button>
-                      <label className="flex">
-                        <span className="sr-only">Quantity</span>
-                        <input
-                          type="number"
-                          min="1"
-                          disabled={isProcessing}
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updatePublicQuantity(
-                              item.productId,
-                              parseInt(e.target.value, 10) || 1
-                            )
-                          }
-                          className="w-full border-0 text-center font-sans font-bold text-ink outline-none disabled:bg-gray-50"
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() =>
-                          updatePublicQuantity(
-                            item.productId,
-                            item.quantity + 1
-                          )
-                        }
-                        aria-label="Add one"
-                        className="border-0 bg-transparent text-[18px] font-bold text-brand-navy hover:bg-surface cursor-pointer flex items-center justify-center disabled:opacity-50"
-                      >
-                        +
-                      </button>
+                      {/* Line 2 on mobile: Stepper + Line Total */}
+                      <div className="flex items-center justify-between sm:contents pt-1 sm:pt-0">
+                        {/* Stepper */}
+                        <div className="grid grid-cols-[40px_44px_40px] h-11 border border-field-border rounded-full overflow-hidden bg-white">
+                          <button
+                            type="button"
+                            disabled={isProcessing}
+                            onClick={() =>
+                              updatePublicQuantity(
+                                item.productId,
+                                item.quantity - 1
+                              )
+                            }
+                            aria-label="Remove one"
+                            className="border-0 bg-transparent text-[18px] font-bold text-brand-navy hover:bg-surface cursor-pointer flex items-center justify-center disabled:opacity-50"
+                          >
+                            −
+                          </button>
+                          <label className="flex">
+                            <span className="sr-only">Quantity</span>
+                            <input
+                              type="number"
+                              min="1"
+                              disabled={isProcessing}
+                              value={item.quantity}
+                              onChange={(e) =>
+                                updatePublicQuantity(
+                                  item.productId,
+                                  parseInt(e.target.value, 10) || 1
+                                )
+                              }
+                              className="w-full border-0 text-center font-sans font-bold text-ink outline-none disabled:bg-gray-50"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            disabled={isProcessing}
+                            onClick={() =>
+                              updatePublicQuantity(
+                                item.productId,
+                                item.quantity + 1
+                              )
+                            }
+                            aria-label="Add one"
+                            className="border-0 bg-transparent text-[18px] font-bold text-brand-navy hover:bg-surface cursor-pointer flex items-center justify-center disabled:opacity-50"
+                          >
+                            +
+                          </button>
+                        </div>
+                        {/* Total for line */}
+                        <strong className="sm:min-w-[56px] text-right text-[16px] sm:text-[17px] text-navy-deep font-extrabold">
+                          {formatMoney(item.pricePence * item.quantity, {
+                            allowPenceOnly: true,
+                          })}
+                        </strong>
+                      </div>
                     </div>
-                    {/* Total for line */}
-                    <strong className="sm:min-w-[56px] text-right text-[16px] sm:text-[17px] text-navy-deep font-extrabold">
-                      {formatMoney(item.pricePence * item.quantity, {
-                        allowPenceOnly: true,
-                      })}
-                    </strong>
-                  </div>
+                  );
+                })}
+
+                <div className="pt-4 border-t border-[#EEEFF4] flex items-center justify-between">
+                  <Link
+                    href="/shop"
+                    className="inline-flex items-center gap-2 text-[14px] font-bold text-brand-navy hover:text-brand-red no-underline transition-colors"
+                  >
+                    ← Continue shopping
+                  </Link>
                 </div>
-              ))
-              )}
+              </>
+            )}
             </section>
 
             {/* Delivery Details (order-3 on mobile, row 2 col 1 on desktop) */}
@@ -301,10 +408,169 @@ function CheckoutForm() {
               <h2 className="col-span-full m-0 text-[20px] sm:text-[22px] font-extrabold text-ink">
                 Delivery details
               </h2>
+
+              {/* 1. Store name (public: optional) */}
               <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                Email for your order confirmation
+                Company or store name (optional)
+                <input
+                  type="text"
+                  name="organization"
+                  autoComplete="organization"
+                  disabled={isProcessing}
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
+                  placeholder="Company, organisation or shop name"
+                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+                />
+              </label>
+
+              {/* 2. Full name */}
+              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                Full name
+                <input
+                  type="text"
+                  name="name"
+                  autoComplete="name"
+                  required
+                  disabled={isProcessing}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="First and last name"
+                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+                />
+              </label>
+
+              {/* 3. Address line 1 */}
+              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                Address line 1
+                <input
+                  type="text"
+                  name="address-line1"
+                  autoComplete="address-line1"
+                  required
+                  disabled={isProcessing}
+                  value={addressLine1}
+                  onChange={(e) => setAddressLine1(e.target.value)}
+                  placeholder="Building name or street number and street"
+                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+                />
+              </label>
+
+              {/* 4. Address line 2 (optional) */}
+              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                Address line 2 (optional)
+                <input
+                  type="text"
+                  name="address-line2"
+                  autoComplete="address-line2"
+                  disabled={isProcessing}
+                  value={addressLine2}
+                  onChange={(e) => setAddressLine2(e.target.value)}
+                  placeholder="Flat, suite, unit, floor, etc."
+                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+                />
+              </label>
+
+              {/* 5. Address line 3 (optional) */}
+              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                Address line 3 (optional)
+                <input
+                  type="text"
+                  name="address-line3"
+                  autoComplete="address-line3"
+                  disabled={isProcessing}
+                  value={addressLine3}
+                  onChange={(e) => setAddressLine3(e.target.value)}
+                  placeholder="Area, district or estate"
+                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+                />
+              </label>
+
+              {/* 6. Town or city */}
+              <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                Town or city
+                <input
+                  type="text"
+                  name="address-level2"
+                  autoComplete="address-level2"
+                  required
+                  disabled={isProcessing}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Manchester"
+                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+                />
+              </label>
+
+              {/* 7. Postcode with Find address lookup */}
+              <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                <label htmlFor="public-postcode">Postcode</label>
+                <div className="flex gap-2">
+                  <input
+                    id="public-postcode"
+                    type="text"
+                    name="postal-code"
+                    autoComplete="postal-code"
+                    required
+                    disabled={isProcessing}
+                    value={postcode}
+                    onChange={(e) => {
+                      setPostcode(e.target.value.toUpperCase());
+                      setLookupError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handlePostcodeLookup();
+                      }
+                    }}
+                    placeholder="e.g. M1 1AE"
+                    className="flex-1 h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy uppercase placeholder:normal-case disabled:bg-gray-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePostcodeLookup}
+                    disabled={isProcessing || isSearchingPostcode || !postcode.trim()}
+                    className="h-12 px-4 rounded-[10px] bg-brand-navy hover:bg-[#231b64] text-white font-sans font-bold text-[14px] cursor-pointer shadow-sm transition-colors disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {isSearchingPostcode ? 'Finding...' : 'Find address'}
+                  </button>
+                </div>
+              </div>
+
+              {lookupError && (
+                <div className="col-span-full p-2.5 rounded-lg bg-red-50 border border-red-200 text-danger text-[13px] font-medium">
+                  {lookupError}
+                </div>
+              )}
+
+              {addressResults.length > 0 && (
+                <div className="col-span-full flex flex-col gap-1.5">
+                  <label htmlFor="public-address-select" className="text-[13px] font-semibold text-text-2">
+                    Select your address ({addressResults.length} found)
+                  </label>
+                  <select
+                    id="public-address-select"
+                    value={selectedAddressId}
+                    onChange={(e) => handleSelectAddress(e.target.value)}
+                    className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[15px] text-ink bg-white outline-none focus:border-brand-navy"
+                  >
+                    <option value="">-- Choose your address to fill fields --</option>
+                    {addressResults.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.formatted}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* 8. Email */}
+              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                Email
                 <input
                   type="email"
+                  name="email"
                   autoComplete="email"
                   required
                   disabled={isProcessing}
@@ -314,68 +580,23 @@ function CheckoutForm() {
                   className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
                 />
               </label>
-              <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                Full name
-                <input
-                  type="text"
-                  autoComplete="name"
-                  required
-                  disabled={isProcessing}
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
-                />
-              </label>
-              <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+
+              {/* 9. Phone */}
+              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
                 Phone
                 <input
                   type="tel"
+                  name="tel"
                   autoComplete="tel"
                   disabled={isProcessing}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Optional"
+                  placeholder="e.g. 07123 456789 (for delivery updates)"
                   className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
                 />
               </label>
-              <label className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                Address
-                <input
-                  type="text"
-                  autoComplete="street-address"
-                  required
-                  disabled={isProcessing}
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="House number and street"
-                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
-                />
-              </label>
-              <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                Town or city
-                <input
-                  type="text"
-                  autoComplete="address-level2"
-                  required
-                  disabled={isProcessing}
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
-                />
-              </label>
-              <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                Postcode
-                <input
-                  type="text"
-                  autoComplete="postal-code"
-                  required
-                  disabled={isProcessing}
-                  value={postcode}
-                  onChange={(e) => setPostcode(e.target.value)}
-                  placeholder="e.g. SW1A 1AA"
-                  className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
-                />
-              </label>
+
+              {/* Billing address same checkbox */}
               <label className="col-span-full flex gap-2.5 items-center text-[14px] sm:text-[15px] cursor-pointer pt-1">
                 <input
                   type="checkbox"

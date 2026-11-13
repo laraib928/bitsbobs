@@ -95,7 +95,7 @@ export const PRODUCTS: Product[] = [
     barcode: SITE_CONFIG.placeholders.eanBarcode,
     categoryId: 'cosmetics',
     shortLine: 'Fine teeth for school-term checks',
-    description: `Durable fine-toothed nit comb. Essential for school-term family checks. ${SITE_CONFIG.placeholders.standDimensions}`,
+    description: `Durable fine-toothed nit comb. Ideal for school-term family checks. ${SITE_CONFIG.placeholders.standDimensions}`,
     features: [
       'Fine teeth precision',
       'Ergonomic grip',
@@ -390,7 +390,7 @@ export const PRODUCTS: Product[] = [
       '5 boards per hanging card',
       'Dual grit surface',
       'Flexible wooden core',
-      'Essential daily nail care',
+      'Handy daily nail care',
     ],
     images: ['/images/emery-boards.jpg'],
     retailPricePence: 99,

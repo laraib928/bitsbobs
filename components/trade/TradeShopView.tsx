@@ -13,6 +13,7 @@ import { ReorderIcon } from '@/components/ui/Icons';
 import { useToast } from '@/components/admin/ToastContext';
 import type { TradeShopData, TradeSubCategory } from '@/lib/data/trade';
 import type { Category } from '@/lib/data/types';
+import { matchesProductSearch } from '@/lib/search';
 
 interface TradeShopViewProps {
   initialData: TradeShopData;
@@ -498,9 +499,11 @@ export function TradeShopView({
     if (!initialData.lastOrder || initialData.lastOrder.items.length === 0) return;
 
     for (const item of initialData.lastOrder.items) {
+      const matched = initialData.products.find((p) => p.id === item.productId);
       setTradePacks(
         {
           productId: item.productId,
+          slug: matched?.slug,
           name: item.name,
           image: item.image,
           sku: item.sku,
@@ -656,15 +659,9 @@ export function TradeShopView({
       );
     }
 
-    // Search query
+    // Search query with synonyms support
     if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.code.toLowerCase().includes(q) ||
-          p.shortLine.toLowerCase().includes(q)
-      );
+      list = list.filter((p) => matchesProductSearch(p, search));
     }
 
     // Sorting
@@ -895,20 +892,17 @@ export function TradeShopView({
         >
           {/* Trade promotion banner - hidden if no active promotion */}
           {initialData.activePromotion && (
-            <div className="bg-brand-red text-white rounded-[16px] p-5 sm:px-6 flex flex-wrap gap-3 items-center justify-between shadow-sm">
+            <div className="bg-brand-red text-white rounded-[16px] p-5 sm:px-6 flex flex-wrap gap-4 items-center justify-between shadow-sm">
               <div className="min-w-0 flex-1">
-                <strong className="block text-[17px] font-extrabold leading-snug">
-                  {initialData.activePromotion.title}
-                </strong>
-                <p className="mt-1 mb-0 text-[14px] text-white/90 leading-tight">
-                  {initialData.activePromotion.description}
+                <p className="m-0 text-[15px] sm:text-[16px] font-bold text-white leading-snug">
+                  {initialData.activePromotion.description || initialData.activePromotion.title}
                 </p>
               </div>
               <Link
-                href={initialData.activePromotion.targetHref}
-                className="inline-flex items-center h-10 px-4 rounded-full bg-white hover:bg-surface text-brand-red no-underline font-extrabold text-[13px] transition-colors shadow-xs flex-none"
+                href="/trade/stands"
+                className="inline-flex items-center h-10 px-5 rounded-full bg-white hover:bg-surface text-brand-red no-underline font-extrabold text-[13px] sm:text-[14px] transition-colors shadow-xs flex-none"
               >
-                View offer →
+                View the range
               </Link>
             </div>
           )}

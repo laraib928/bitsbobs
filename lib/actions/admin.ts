@@ -358,7 +358,7 @@ export async function saveSiteContentAction(content: {
   contactPhone: string;
   contactEmail: string;
   socialFacebook: string;
-  socialInstagram: string;
+  socialInstagram?: string;
   socialTiktok: string;
 }): Promise<{ success: boolean; error?: string }> {
   const auth = await verifyAdminUser();

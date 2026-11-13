@@ -2,6 +2,7 @@ import React from 'react';
 import { TopBar } from '@/components/layout/TopBar';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton';
 
 export default function PublicLayout({
   children,
@@ -14,6 +15,7 @@ export default function PublicLayout({
       <Header variant="public" />
       <main className="flex-1 w-full">{children}</main>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 }

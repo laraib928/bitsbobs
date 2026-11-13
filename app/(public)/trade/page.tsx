@@ -9,6 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function TradeAuthPage() {
+  const isLookupConfigured = Boolean(
+    process.env.GETADDRESS_API_KEY && process.env.GETADDRESS_API_KEY.trim().length > 0
+  );
+
   return (
     <Suspense
       fallback={
@@ -17,7 +21,7 @@ export default function TradeAuthPage() {
         </div>
       }
     >
-      <TradeLoginStockistView />
+      <TradeLoginStockistView isLookupConfigured={isLookupConfigured} />
     </Suspense>
   );
 }
