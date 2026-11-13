@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { signOutAction } from '@/lib/actions/auth';
 import { SITE_CONFIG } from '@/lib/config';
@@ -31,30 +30,7 @@ export default async function TradePendingPage() {
   }
 
   return (
-    <div className="font-sans text-ink min-h-screen bg-surface flex flex-col">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-line">
-        <div className="max-w-[1320px] mx-auto px-6 sm:px-8 py-4 flex items-center justify-between">
-          <Link href="/" aria-label="Bits N Bobs home">
-            <Image
-              src="/images/logo.png"
-              alt="Bits 'N' Bobs"
-              width={160}
-              height={48}
-              className="h-10 sm:h-12 w-auto block"
-            />
-          </Link>
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="text-[14px] font-bold text-muted hover:text-ink cursor-pointer border-0 bg-transparent"
-            >
-              Log out
-            </button>
-          </form>
-        </div>
-      </header>
-
+    <div className="font-sans text-ink min-h-[calc(100vh-200px)] bg-surface flex flex-col">
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-[640px] bg-white border border-line rounded-[24px] p-8 sm:p-12 shadow-sm flex flex-col gap-6">
@@ -124,7 +100,7 @@ export default async function TradePendingPage() {
               href="/shop"
               className="flex-1 sm:flex-none flex items-center justify-center h-12 px-6 rounded-full bg-brand-navy hover:bg-[#231b64] text-white font-bold text-[15px] no-underline transition-colors"
             >
-              Browse public shop
+              Continue shopping
             </Link>
             <form action={signOutAction} className="flex-1 sm:flex-none">
               <button

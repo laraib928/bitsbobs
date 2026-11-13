@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Order } from '@/lib/data/types';
 import { signOutAction } from '@/lib/actions/auth';
 import { SITE_CONFIG } from '@/lib/config';
@@ -50,35 +49,6 @@ export function RetailerAccountView({ orders, profile }: RetailerAccountViewProp
 
   return (
     <div className="bg-surface w-full min-h-screen">
-      {/* Account top bar */}
-      <header className="bg-white border-b border-line">
-        <div className="max-w-[1320px] mx-auto px-8 py-4 flex flex-wrap gap-4 items-center justify-between">
-          <Link href="/" aria-label="Bits N Bobs home">
-            <Image
-              src="/images/logo.png"
-              alt="Bits 'N' Bobs"
-              width={160}
-              height={48}
-              className="h-12 w-auto block"
-            />
-          </Link>
-          <div className="flex gap-2.5 flex-wrap">
-            <Link
-              href="/trade/shop"
-              className="flex items-center h-[50px] px-5 rounded-full bg-brand-navy hover:bg-[#251c68] text-white no-underline font-bold transition-colors"
-            >
-              Trade shop
-            </Link>
-            <Link
-              href="/trade/checkout"
-              className="flex items-center h-[50px] px-5 rounded-full bg-brand-red hover:bg-[#c9000b] text-white no-underline font-bold transition-colors"
-            >
-              Basket, 35 packs
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Main Account Area */}
       <div className="max-w-[1320px] mx-auto px-8 py-9 pb-20 flex flex-wrap gap-6 items-start">
         {/* Left Sidebar Nav */}

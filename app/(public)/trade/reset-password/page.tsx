@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { updatePasswordAction } from '@/lib/actions/auth';
 
@@ -43,30 +42,16 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="font-sans text-ink min-h-screen bg-surface flex flex-col">
-      <header className="bg-white border-b border-line">
-        <div className="max-w-[1320px] mx-auto px-6 sm:px-8 py-4 flex items-center justify-between">
-          <Link href="/" aria-label="Bits N Bobs home">
-            <Image
-              src="/images/logo.png"
-              alt="Bits 'N' Bobs"
-              width={160}
-              height={48}
-              className="h-10 sm:h-12 w-auto block"
-            />
-          </Link>
-          <Link
-            href="/trade"
-            className="text-[14px] font-bold text-brand-navy hover:text-brand-red no-underline"
-          >
-            Back to login
-          </Link>
-        </div>
-      </header>
-
+    <div className="font-sans text-ink min-h-[calc(100vh-200px)] bg-surface flex flex-col">
       <main className="flex-1 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-[480px] bg-white border border-line rounded-[24px] p-8 sm:p-10 shadow-sm flex flex-col gap-6">
           <div>
+            <Link
+              href="/trade?tab=login"
+              className="inline-flex items-center text-[14px] font-bold text-brand-navy hover:text-brand-red no-underline mb-3"
+            >
+              ← Back to trade login
+            </Link>
             <h1 className="m-0 text-[30px] font-extrabold font-stretch-108 text-navy-deep">
               Create new password
             </h1>
