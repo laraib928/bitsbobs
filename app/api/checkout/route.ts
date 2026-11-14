@@ -25,6 +25,7 @@ const checkoutSchema = z
     addressLine1: z.string().optional().default(''),
     addressLine2: z.string().optional().default(''),
     addressLine3: z.string().optional().default(''),
+    county: z.string().optional().default(''),
     address: z.string().optional().default(''),
     city: z.string().min(2, 'Town or city must be at least 2 characters'),
     postcode: z.string().regex(ukPostcodeRegex, 'Please enter a valid UK postcode'),
@@ -57,6 +58,7 @@ export async function POST(req: NextRequest) {
       addressLine1,
       addressLine2,
       addressLine3,
+      county,
       address,
       city,
       postcode,
@@ -354,6 +356,7 @@ export async function POST(req: NextRequest) {
     const line1 = (addressLine1 || address || '').trim();
     const line2 = (addressLine2 || '').trim();
     const line3 = (addressLine3 || '').trim();
+    const countyVal = (county || '').trim();
     const trimmedStore = (storeName || '').trim();
     const cleanPostcode = postcode.trim().toUpperCase();
 
@@ -363,8 +366,9 @@ export async function POST(req: NextRequest) {
       line2: line2 || null,
       line3: line3 || null,
       town: city,
+      county: countyVal || null,
       postcode: cleanPostcode,
-      address: [trimmedStore, line1, line2, line3, city, cleanPostcode]
+      address: [trimmedStore, line1, line2, line3, city, countyVal, cleanPostcode]
         .filter(Boolean)
         .join(', '),
     };
@@ -373,8 +377,9 @@ export async function POST(req: NextRequest) {
       email,
       full_name: fullName,
       phone: phone || '',
-      address: [line1, line2, line3].filter(Boolean).join(', '),
+      address: [line1, line2, line3, countyVal].filter(Boolean).join(', '),
       city,
+      county: countyVal || null,
       postcode: cleanPostcode,
       billing_same: billingSame,
       subtotal,

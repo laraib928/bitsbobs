@@ -16,6 +16,7 @@ import { FreeDeliveryBar } from './FreeDeliveryBar';
 import { LockIcon } from '@/components/ui/Icons';
 import { getTradeDeliveryFee } from '@/lib/delivery';
 import { getStripePromise } from '@/lib/stripe-client';
+import { lookupPostcode } from '@/lib/lookupPostcode';
 
 const ukPostcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i;
 
@@ -100,6 +101,7 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
   const [addressLine2, setAddressLine2] = useState(defaultAddr.line2 || '');
   const [addressLine3, setAddressLine3] = useState(defaultAddr.line3 || '');
   const [city, setCity] = useState(defaultAddr.town || defaultAddr.city || '');
+  const [county, setCounty] = useState(defaultAddr.county || '');
   const [postcode, setPostcode] = useState(defaultAddr.postcode || '');
   const [email, setEmail] = useState(profile?.email || '');
   const [phone, setPhone] = useState(profile?.phone || '');
@@ -108,18 +110,6 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
   // Postcode lookup state
   const [isSearchingPostcode, setIsSearchingPostcode] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
-  const [addressResults, setAddressResults] = useState<
-    Array<{
-      id: string;
-      line1: string;
-      line2: string;
-      line3?: string;
-      town: string;
-      postcode: string;
-      formatted: string;
-    }>
-  >([]);
-  const [selectedAddressId, setSelectedAddressId] = useState('');
 
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'account'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -136,44 +126,28 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
   const handlePostcodeLookup = async () => {
     const pc = postcode.trim();
     if (!pc) {
-      setLookupError('Please enter a postcode');
+      setLookupError('Please enter a UK postcode.');
       return;
     }
     setLookupError(null);
     setIsSearchingPostcode(true);
     try {
-      const res = await fetch(`/api/address-lookup?postcode=${encodeURIComponent(pc)}`);
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setLookupError(data.error || 'No addresses found for this postcode.');
-        setAddressResults([]);
+      const result = await lookupPostcode(pc);
+      if (!result) {
+        setLookupError('Invalid postcode. Please check and try again.');
       } else {
-        const addresses = data.addresses || [];
-        setAddressResults(addresses);
-        if (addresses.length === 0) {
-          setLookupError('No addresses found for this postcode. Please enter manually.');
-        } else if (data.postcode) {
-          setPostcode(data.postcode);
+        setPostcode(result.postcode);
+        if (result.city) {
+          setCity(result.city);
+        }
+        if (result.county) {
+          setCounty(result.county);
         }
       }
     } catch {
-      setLookupError('Unable to look up postcode. Please enter your address manually.');
+      setLookupError('Invalid postcode. Please check and try again.');
     } finally {
       setIsSearchingPostcode(false);
-    }
-  };
-
-  const handleSelectAddress = (id: string) => {
-    setSelectedAddressId(id);
-    const found = addressResults.find((a) => a.id === id);
-    if (found) {
-      setAddressLine1(found.line1 || '');
-      setAddressLine2(found.line2 || '');
-      setAddressLine3(found.line3 || '');
-      setCity(found.town || '');
-      if (found.postcode) {
-        setPostcode(found.postcode);
-      }
     }
   };
 
@@ -256,6 +230,7 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
           addressLine1: addressLine1.trim(),
           addressLine2: addressLine2.trim(),
           addressLine3: addressLine3.trim(),
+          county: county.trim(),
           address: addressLine1.trim(),
           city: city.trim(),
           postcode: postcode.trim().toUpperCase(),
@@ -578,7 +553,10 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
                 required
                 disabled={isProcessing}
                 value={addressLine1}
-                onChange={(e) => setAddressLine1(e.target.value)}
+                onChange={(e) => {
+                  setAddressLine1(e.target.value);
+                  if (lookupError) setLookupError(null);
+                }}
                 placeholder="Shop number and street"
                 className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
               />
@@ -593,7 +571,10 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
                 autoComplete="address-line2"
                 disabled={isProcessing}
                 value={addressLine2}
-                onChange={(e) => setAddressLine2(e.target.value)}
+                onChange={(e) => {
+                  setAddressLine2(e.target.value);
+                  if (lookupError) setLookupError(null);
+                }}
                 placeholder="Unit, suite, floor, etc."
                 className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
               />
@@ -608,7 +589,10 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
                 autoComplete="address-line3"
                 disabled={isProcessing}
                 value={addressLine3}
-                onChange={(e) => setAddressLine3(e.target.value)}
+                onChange={(e) => {
+                  setAddressLine3(e.target.value);
+                  if (lookupError) setLookupError(null);
+                }}
                 placeholder="Area, district or estate"
                 className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
               />
@@ -624,15 +608,41 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
                 required
                 disabled={isProcessing}
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => {
+                  setCity(e.target.value);
+                  if (lookupError) setLookupError(null);
+                }}
                 placeholder="e.g. Manchester"
                 className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
               />
             </label>
 
-            {/* 7. Postcode with Find address lookup */}
-            <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-              <label htmlFor="trade-postcode">Postcode</label>
+            {/* County (optional, auto-filled) */}
+            <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+              County (optional)
+              <input
+                type="text"
+                name="address-level1"
+                autoComplete="address-level1"
+                disabled={isProcessing}
+                value={county}
+                onChange={(e) => {
+                  setCounty(e.target.value);
+                  if (lookupError) setLookupError(null);
+                }}
+                placeholder="e.g. Greater Manchester"
+                className="w-full h-12 min-h-[44px] border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy disabled:bg-gray-50"
+              />
+            </label>
+
+            {/* 7. Postcode with Find postcode lookup */}
+            <div className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <label htmlFor="trade-postcode">Postcode</label>
+                <span className="text-[12px] font-normal text-muted">
+                  Enter your postcode to auto-fill city and county
+                </span>
+              </div>
               <div className="flex gap-2">
                 <input
                   id="trade-postcode"
@@ -661,35 +671,25 @@ function TradeCheckoutForm({ profile }: TradeCheckoutViewProps) {
                   disabled={isProcessing || isSearchingPostcode || !postcode.trim()}
                   className="h-12 px-4 rounded-[10px] bg-brand-navy hover:bg-[#231b64] text-white font-sans font-bold text-[14px] cursor-pointer shadow-sm transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
-                  {isSearchingPostcode ? 'Finding...' : 'Find address'}
+                  {isSearchingPostcode ? 'Finding...' : 'Find postcode'}
                 </button>
               </div>
             </div>
 
             {lookupError && (
-              <div className="col-span-full p-2.5 rounded-lg bg-red-50 border border-red-200 text-danger text-[13px] font-medium">
-                {lookupError}
-              </div>
-            )}
-
-            {addressResults.length > 0 && (
-              <div className="col-span-full flex flex-col gap-1.5">
-                <label htmlFor="trade-address-select" className="text-[13px] font-semibold text-text-2">
-                  Select your address ({addressResults.length} found)
-                </label>
-                <select
-                  id="trade-address-select"
-                  value={selectedAddressId}
-                  onChange={(e) => handleSelectAddress(e.target.value)}
-                  className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[15px] text-ink bg-white outline-none focus:border-brand-navy"
+              <div className="col-span-full p-3 rounded-xl bg-amber-50 border border-amber-200 text-[#78350F] text-[13px] flex items-start justify-between gap-2 shadow-xs">
+                <div className="flex items-start gap-2">
+                  <span className="text-[15px] leading-tight select-none">ℹ️</span>
+                  <span className="leading-snug">{lookupError}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLookupError(null)}
+                  aria-label="Dismiss notice"
+                  className="text-amber-800/60 hover:text-amber-900 text-sm font-bold border-0 bg-transparent cursor-pointer p-0 shrink-0"
                 >
-                  <option value="">-- Choose your address to fill fields --</option>
-                  {addressResults.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.formatted}
-                    </option>
-                  ))}
-                </select>
+                  ✕
+                </button>
               </div>
             )}
 

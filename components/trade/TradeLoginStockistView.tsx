@@ -10,24 +10,13 @@ import {
   forgotPasswordAction,
 } from '@/lib/actions/auth';
 import { EyeIcon, EyeOffIcon } from '@/components/ui/Icons';
-
-interface AddressOption {
-  id: string;
-  line1: string;
-  line2: string;
-  line3?: string;
-  town: string;
-  postcode: string;
-  formatted: string;
-}
+import { lookupPostcode } from '@/lib/lookupPostcode';
 
 interface TradeLoginStockistViewProps {
   isLookupConfigured?: boolean;
 }
 
-export function TradeLoginStockistView({
-  isLookupConfigured = false,
-}: TradeLoginStockistViewProps) {
+export function TradeLoginStockistView({}: TradeLoginStockistViewProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/trade/shop';
@@ -66,8 +55,6 @@ export function TradeLoginStockistView({
   const [tradingAddressLine2, setTradingAddressLine2] = useState('');
   const [tradingAddressLine3, setTradingAddressLine3] = useState('');
   const [tradingTown, setTradingTown] = useState('');
-  const [tradingResults, setTradingResults] = useState<AddressOption[]>([]);
-  const [selectedTradingId, setSelectedTradingId] = useState('');
   const [isSearchingTrading, setIsSearchingTrading] = useState(false);
   const [tradingLookupError, setTradingLookupError] = useState<string | null>(null);
 
@@ -77,8 +64,6 @@ export function TradeLoginStockistView({
   const [deliveryAddressLine2, setDeliveryAddressLine2] = useState('');
   const [deliveryAddressLine3, setDeliveryAddressLine3] = useState('');
   const [deliveryTown, setDeliveryTown] = useState('');
-  const [deliveryResults, setDeliveryResults] = useState<AddressOption[]>([]);
-  const [selectedDeliveryId, setSelectedDeliveryId] = useState('');
   const [isSearchingDelivery, setIsSearchingDelivery] = useState(false);
   const [deliveryLookupError, setDeliveryLookupError] = useState<string | null>(null);
 
@@ -101,88 +86,56 @@ export function TradeLoginStockistView({
   const handleTradingLookup = async () => {
     const pc = tradingPostcode.trim();
     if (!pc) {
-      setTradingLookupError('Please enter a postcode');
+      setTradingLookupError('Please enter a UK postcode.');
       return;
     }
     setTradingLookupError(null);
     setIsSearchingTrading(true);
     try {
-      const res = await fetch(`/api/address-lookup?postcode=${encodeURIComponent(pc)}`);
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setTradingLookupError(data.error || 'No addresses found for this postcode.');
-        setTradingResults([]);
+      const result = await lookupPostcode(pc);
+      if (!result) {
+        setTradingLookupError('Invalid postcode. Please check and try again.');
       } else {
-        const addresses: AddressOption[] = data.addresses || [];
-        setTradingResults(addresses);
-        if (addresses.length === 0) {
-          setTradingLookupError('No addresses found for this postcode. Please type your address.');
-        } else if (data.postcode) {
-          setTradingPostcode(data.postcode);
+        setTradingPostcode(result.postcode);
+        if (result.city) {
+          setTradingTown(result.city);
+        }
+        if (result.county && !tradingAddressLine3) {
+          setTradingAddressLine3(result.county);
         }
       }
     } catch {
-      setTradingLookupError('Unable to look up postcode. Please enter your address manually.');
+      setTradingLookupError('Invalid postcode. Please check and try again.');
     } finally {
       setIsSearchingTrading(false);
-    }
-  };
-
-  const handleSelectTradingAddress = (id: string) => {
-    setSelectedTradingId(id);
-    const found = tradingResults.find((a) => a.id === id);
-    if (found) {
-      setTradingAddressLine1(found.line1);
-      setTradingAddressLine2(found.line2);
-      setTradingAddressLine3(found.line3 || '');
-      setTradingTown(found.town);
-      if (found.postcode) {
-        setTradingPostcode(found.postcode);
-      }
     }
   };
 
   const handleDeliveryLookup = async () => {
     const pc = deliveryPostcode.trim();
     if (!pc) {
-      setDeliveryLookupError('Please enter a postcode');
+      setDeliveryLookupError('Please enter a UK postcode.');
       return;
     }
     setDeliveryLookupError(null);
     setIsSearchingDelivery(true);
     try {
-      const res = await fetch(`/api/address-lookup?postcode=${encodeURIComponent(pc)}`);
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setDeliveryLookupError(data.error || 'No addresses found for this postcode.');
-        setDeliveryResults([]);
+      const result = await lookupPostcode(pc);
+      if (!result) {
+        setDeliveryLookupError('Invalid postcode. Please check and try again.');
       } else {
-        const addresses: AddressOption[] = data.addresses || [];
-        setDeliveryResults(addresses);
-        if (addresses.length === 0) {
-          setDeliveryLookupError('No addresses found for this postcode. Please type your address.');
-        } else if (data.postcode) {
-          setDeliveryPostcode(data.postcode);
+        setDeliveryPostcode(result.postcode);
+        if (result.city) {
+          setDeliveryTown(result.city);
+        }
+        if (result.county && !deliveryAddressLine3) {
+          setDeliveryAddressLine3(result.county);
         }
       }
     } catch {
-      setDeliveryLookupError('Unable to look up postcode. Please enter your address manually.');
+      setDeliveryLookupError('Invalid postcode. Please check and try again.');
     } finally {
       setIsSearchingDelivery(false);
-    }
-  };
-
-  const handleSelectDeliveryAddress = (id: string) => {
-    setSelectedDeliveryId(id);
-    const found = deliveryResults.find((a) => a.id === id);
-    if (found) {
-      setDeliveryAddressLine1(found.line1);
-      setDeliveryAddressLine2(found.line2);
-      setDeliveryAddressLine3(found.line3 || '');
-      setDeliveryTown(found.town);
-      if (found.postcode) {
-        setDeliveryPostcode(found.postcode);
-      }
     }
   };
 
@@ -734,7 +687,10 @@ export function TradeLoginStockistView({
                     autoComplete="address-line1"
                     placeholder="Building name, shop number, or street"
                     value={tradingAddressLine1}
-                    onChange={(e) => setTradingAddressLine1(e.target.value)}
+                    onChange={(e) => {
+                      setTradingAddressLine1(e.target.value);
+                      if (tradingLookupError) setTradingLookupError(null);
+                    }}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
@@ -748,7 +704,10 @@ export function TradeLoginStockistView({
                     autoComplete="address-line2"
                     placeholder="Unit, suite, floor, etc."
                     value={tradingAddressLine2}
-                    onChange={(e) => setTradingAddressLine2(e.target.value)}
+                    onChange={(e) => {
+                      setTradingAddressLine2(e.target.value);
+                      if (tradingLookupError) setTradingLookupError(null);
+                    }}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
@@ -762,7 +721,10 @@ export function TradeLoginStockistView({
                     autoComplete="address-line3"
                     placeholder="Area, district or estate"
                     value={tradingAddressLine3}
-                    onChange={(e) => setTradingAddressLine3(e.target.value)}
+                    onChange={(e) => {
+                      setTradingAddressLine3(e.target.value);
+                      if (tradingLookupError) setTradingLookupError(null);
+                    }}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
@@ -777,14 +739,22 @@ export function TradeLoginStockistView({
                     autoComplete="address-level2"
                     placeholder="e.g. Manchester"
                     value={tradingTown}
-                    onChange={(e) => setTradingTown(e.target.value)}
+                    onChange={(e) => {
+                      setTradingTown(e.target.value);
+                      if (tradingLookupError) setTradingLookupError(null);
+                    }}
                     className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                   />
                 </label>
 
-                {/* 7. Postcode with Find address lookup */}
-                <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                  <label htmlFor="trading-postcode">Postcode</label>
+                {/* 7. Postcode with Find postcode lookup */}
+                <div className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <label htmlFor="trading-postcode">Postcode</label>
+                    <span className="text-[12px] font-normal text-muted">
+                      Enter your postcode to auto-fill city and county
+                    </span>
+                  </div>
                   <div className="flex gap-2">
                     <input
                       id="trading-postcode"
@@ -812,38 +782,25 @@ export function TradeLoginStockistView({
                       disabled={isSearchingTrading || !tradingPostcode.trim()}
                       className="h-12 px-4 rounded-[10px] bg-brand-navy hover:bg-[#231b64] text-white font-sans font-bold text-[14px] cursor-pointer shadow-sm transition-colors disabled:opacity-50 whitespace-nowrap"
                     >
-                      {isSearchingTrading ? 'Finding...' : 'Find address'}
+                      {isSearchingTrading ? 'Finding...' : 'Find postcode'}
                     </button>
                   </div>
                 </div>
 
                 {tradingLookupError && (
-                  <div className="col-span-full p-2.5 rounded-lg bg-red-50 border border-red-200 text-danger text-[13px] font-medium">
-                    {tradingLookupError}
-                  </div>
-                )}
-
-                {tradingResults.length > 0 && (
-                  <div className="col-span-full flex flex-col gap-1.5">
-                    <label
-                      htmlFor="trading-address-dropdown"
-                      className="text-[13px] font-semibold text-text-2"
+                  <div className="col-span-full p-3 rounded-xl bg-amber-50 border border-amber-200 text-[#78350F] text-[13px] flex items-start justify-between gap-2 shadow-xs">
+                    <div className="flex items-start gap-2">
+                      <span className="text-[15px] leading-tight select-none">ℹ️</span>
+                      <span className="leading-snug">{tradingLookupError}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTradingLookupError(null)}
+                      aria-label="Dismiss notice"
+                      className="text-amber-800/60 hover:text-amber-900 text-sm font-bold border-0 bg-transparent cursor-pointer p-0 shrink-0"
                     >
-                      Select your address ({tradingResults.length} found)
-                    </label>
-                    <select
-                      id="trading-address-dropdown"
-                      value={selectedTradingId}
-                      onChange={(e) => handleSelectTradingAddress(e.target.value)}
-                      className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[15px] text-ink bg-white outline-none focus:border-brand-navy"
-                    >
-                      <option value="">-- Choose your address to fill fields --</option>
-                      {tradingResults.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.formatted}
-                        </option>
-                      ))}
-                    </select>
+                      ✕
+                    </button>
                   </div>
                 )}
 
@@ -935,7 +892,10 @@ export function TradeLoginStockistView({
                           autoComplete="shipping address-line1"
                           placeholder="Building name, unit number, or street"
                           value={deliveryAddressLine1}
-                          onChange={(e) => setDeliveryAddressLine1(e.target.value)}
+                          onChange={(e) => {
+                            setDeliveryAddressLine1(e.target.value);
+                            if (deliveryLookupError) setDeliveryLookupError(null);
+                          }}
                           className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                         />
                       </label>
@@ -949,7 +909,10 @@ export function TradeLoginStockistView({
                           autoComplete="shipping address-line2"
                           placeholder="Unit, suite, floor, etc."
                           value={deliveryAddressLine2}
-                          onChange={(e) => setDeliveryAddressLine2(e.target.value)}
+                          onChange={(e) => {
+                            setDeliveryAddressLine2(e.target.value);
+                            if (deliveryLookupError) setDeliveryLookupError(null);
+                          }}
                           className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                         />
                       </label>
@@ -963,7 +926,10 @@ export function TradeLoginStockistView({
                           autoComplete="shipping address-line3"
                           placeholder="Area, district or estate"
                           value={deliveryAddressLine3}
-                          onChange={(e) => setDeliveryAddressLine3(e.target.value)}
+                          onChange={(e) => {
+                            setDeliveryAddressLine3(e.target.value);
+                            if (deliveryLookupError) setDeliveryLookupError(null);
+                          }}
                           className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                         />
                       </label>
@@ -978,14 +944,22 @@ export function TradeLoginStockistView({
                           autoComplete="shipping address-level2"
                           placeholder="e.g. Manchester"
                           value={deliveryTown}
-                          onChange={(e) => setDeliveryTown(e.target.value)}
+                          onChange={(e) => {
+                            setDeliveryTown(e.target.value);
+                            if (deliveryLookupError) setDeliveryLookupError(null);
+                          }}
                           className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[16px] text-ink bg-white outline-none focus:border-brand-navy"
                         />
                       </label>
 
-                      {/* Delivery Postcode with lookup */}
-                      <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
-                        <label htmlFor="delivery-postcode">Postcode</label>
+                      {/* Delivery Postcode with Find postcode lookup */}
+                      <div className="col-span-full flex flex-col gap-1.5 text-[14px] font-semibold text-ink">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <label htmlFor="delivery-postcode">Postcode</label>
+                          <span className="text-[12px] font-normal text-muted">
+                            Enter your postcode to auto-fill city and county
+                          </span>
+                        </div>
                         <div className="flex gap-2">
                           <input
                             id="delivery-postcode"
@@ -1013,38 +987,25 @@ export function TradeLoginStockistView({
                             disabled={isSearchingDelivery || !deliveryPostcode.trim()}
                             className="h-12 px-4 rounded-[10px] bg-brand-navy hover:bg-[#231b64] text-white font-sans font-bold text-[14px] cursor-pointer shadow-sm transition-colors disabled:opacity-50 whitespace-nowrap"
                           >
-                            {isSearchingDelivery ? 'Finding...' : 'Find address'}
+                            {isSearchingDelivery ? 'Finding...' : 'Find postcode'}
                           </button>
                         </div>
                       </div>
 
                       {deliveryLookupError && (
-                        <div className="col-span-full p-2.5 rounded-lg bg-red-50 border border-red-200 text-danger text-[13px] font-medium">
-                          {deliveryLookupError}
-                        </div>
-                      )}
-
-                      {deliveryResults.length > 0 && (
-                        <div className="col-span-full flex flex-col gap-1.5">
-                          <label
-                            htmlFor="delivery-address-dropdown"
-                            className="text-[13px] font-semibold text-text-2"
+                        <div className="col-span-full p-3 rounded-xl bg-amber-50 border border-amber-200 text-[#78350F] text-[13px] flex items-start justify-between gap-2 shadow-xs">
+                          <div className="flex items-start gap-2">
+                            <span className="text-[15px] leading-tight select-none">ℹ️</span>
+                            <span className="leading-snug">{deliveryLookupError}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setDeliveryLookupError(null)}
+                            aria-label="Dismiss notice"
+                            className="text-amber-800/60 hover:text-amber-900 text-sm font-bold border-0 bg-transparent cursor-pointer p-0 shrink-0"
                           >
-                            Select delivery address ({deliveryResults.length} found)
-                          </label>
-                          <select
-                            id="delivery-address-dropdown"
-                            value={selectedDeliveryId}
-                            onChange={(e) => handleSelectDeliveryAddress(e.target.value)}
-                            className="h-12 border border-field-border rounded-[10px] px-3.5 font-sans font-normal text-[15px] text-ink bg-white outline-none focus:border-brand-navy"
-                          >
-                            <option value="">-- Choose your address to fill fields --</option>
-                            {deliveryResults.map((item) => (
-                              <option key={item.id} value={item.id}>
-                                {item.formatted}
-                              </option>
-                            ))}
-                          </select>
+                            ✕
+                          </button>
                         </div>
                       )}
                     </div>
